@@ -391,5 +391,3 @@ INSERT INTO patients (phone, name) VALUES
   ('919876543211', 'Test Patient Diya [SYNTHETIC]'),
   ('919876543212', 'Test Patient Rohan [SYNTHETIC]')
 ON CONFLICT (phone) DO NOTHING;
-
-COMMIT;
