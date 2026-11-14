@@ -78,6 +78,7 @@ export const dashboardAPI = {
   getAppointmentTrend: () => request('/dashboard/appointment-trend'),
   getRecentErrors: () => request('/dashboard/recent-errors'),
   getVoiceCallSummary: () => request('/dashboard/voice-call-summary'),
+  getNotifications: () => request('/dashboard/notifications'),
 };
 
 // Appointments

@@ -248,4 +248,88 @@ router.get('/voice-call-summary', requireAuth, async (req, res, next) => {
   }
 });
 
+/**
+ * GET /api/dashboard/notifications — Live operational notifications
+ */
+router.get('/notifications', requireAuth, async (req, res, next) => {
+  try {
+    const notifications = [];
+
+    // 1. Pending human escalations
+    try {
+      const { data: escalations } = await db.from('escalations').select('*').eq('resolved', false).limit(5);
+      (escalations || []).forEach((esc) => {
+        notifications.push({
+          id: `esc-${esc.id}`,
+          title: 'Patient Triage Escalation',
+          message: esc.reason || `Human handoff requested for patient ${esc.patient_phone || ''}`,
+          type: 'urgent',
+          timestamp: esc.created_at || new Date().toISOString(),
+          link: '/messages',
+          read: false,
+        });
+      });
+    } catch (_) {}
+
+    // 2. Critical diagnostic lab reports
+    try {
+      const { data: reports } = await db.from('reports').select('*').eq('is_critical', true).order('created_at', { ascending: false }).limit(5);
+      (reports || []).forEach((rep) => {
+        notifications.push({
+          id: `rep-${rep.id}`,
+          title: 'Critical Diagnostic Alert',
+          message: `${rep.report_type || 'Lab Report'} contains critical parameters requiring urgent review.`,
+          type: 'critical',
+          timestamp: rep.created_at || new Date().toISOString(),
+          link: '/reports',
+          read: false,
+        });
+      });
+    } catch (_) {}
+
+    // 3. Recent appointments booked
+    try {
+      const { data: appts } = await db.from('appointments').select('*').order('created_at', { ascending: false }).limit(5);
+      (appts || []).forEach((appt) => {
+        const patientName = appt.patient?.name || 'Patient';
+        const doctorName = appt.doctor?.name || 'Physician';
+        notifications.push({
+          id: `appt-${appt.id}`,
+          title: 'Appointment Scheduled',
+          message: `${patientName} booked with ${doctorName} for ${new Date(appt.slot_time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}.`,
+          type: 'booking',
+          timestamp: appt.created_at || new Date().toISOString(),
+          link: '/appointments',
+          read: true,
+        });
+      });
+    } catch (_) {}
+
+    // 4. Voice verification outcomes
+    try {
+      const { data: calls } = await db.from('call_logs').select('*').order('created_at', { ascending: false }).limit(4);
+      (calls || []).forEach((call) => {
+        if (call.outcome === 'failed' || call.outcome === 'no_answer') {
+          notifications.push({
+            id: `call-${call.id}`,
+            title: 'Voice Reminder Unanswered',
+            message: `Automated call to ${call.patient_phone || 'patient'} was unanswered or disconnected.`,
+            type: 'warning',
+            timestamp: call.created_at || new Date().toISOString(),
+            link: '/calls',
+            read: false,
+          });
+        }
+      });
+    } catch (_) {}
+
+    // Sort by timestamp descending
+    notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    return response.success(res, notifications);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
