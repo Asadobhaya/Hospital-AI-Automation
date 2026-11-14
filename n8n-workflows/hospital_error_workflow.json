@@ -1,0 +1,85 @@
+{
+  "name": "Hospital AI Automation \u2014 Dedicated Error Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c74e209c",
+      "name": "On Any Workflow Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        3800
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const exec = $json.execution || {};\nconst wf = $json.workflow || {};\nconst err = exec.error || {};\nreturn [{\n  json: {\n    subject: '\ud83d\udd34 n8n Workflow Failed: ' + (wf.name || 'Unknown'),\n    body: 'Workflow: ' + (wf.name || 'Unknown') + '\\nFailed node: ' + (exec.lastNodeExecuted || 'Unknown') + '\\nError: ' + (err.message || 'No message') + '\\nExecution URL: ' + (exec.url || '') + '\\nTime: ' + new Date().toISOString()\n  }\n}];"
+      },
+      "id": "badf5a8f",
+      "name": "Build Alert Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        3800
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.ALERT_FROM_EMAIL }}",
+        "toEmail": "={{ $env.ADMIN_EMAIL }}",
+        "subject": "={{ $json.subject }}",
+        "text": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "07ca459e",
+      "name": "Send Error Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        3800
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_SMTP_CRED",
+          "name": "SMTP Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On Any Workflow Error": {
+      "main": [
+        [
+          {
+            "node": "Build Alert Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Alert Message": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  },
+  "meta": {
+    "instanceId": "hospital-ai-automation-error"
+  }
+}

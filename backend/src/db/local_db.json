@@ -1,0 +1,1296 @@
+{
+  "departments": [
+    {
+      "id": 1,
+      "name": "General Medicine",
+      "description": "General health checkups and consultations",
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "name": "Cardiology",
+      "description": "Heart and cardiovascular conditions",
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "name": "Orthopedics",
+      "description": "Bone, joint, and muscle conditions",
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "name": "Dermatology",
+      "description": "Skin, hair, and nail conditions",
+      "is_active": true
+    },
+    {
+      "id": 5,
+      "name": "Pediatrics",
+      "description": "Children and infant healthcare",
+      "is_active": true
+    },
+    {
+      "id": 6,
+      "name": "ENT",
+      "description": "Ear, Nose, and Throat specialist",
+      "is_active": true
+    },
+    {
+      "id": 7,
+      "name": "Neurology",
+      "description": "Brain and nervous system",
+      "is_active": true
+    }
+  ],
+  "doctors": [
+    {
+      "id": 1,
+      "name": "Dr. Amit Sharma [TEST]",
+      "department": "General Medicine",
+      "department_id": 1,
+      "fee": 500,
+      "available_days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "start_time": "09:00",
+      "end_time": "17:00",
+      "slot_duration_minutes": 30,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "name": "Dr. Priya Patel [TEST]",
+      "department": "Cardiology",
+      "department_id": 2,
+      "fee": 1200,
+      "available_days": [
+        "Monday",
+        "Wednesday",
+        "Friday"
+      ],
+      "start_time": "10:00",
+      "end_time": "16:00",
+      "slot_duration_minutes": 45,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "name": "Dr. Rajesh Kumar [TEST]",
+      "department": "Orthopedics",
+      "department_id": 3,
+      "fee": 800,
+      "available_days": [
+        "Tuesday",
+        "Thursday",
+        "Saturday"
+      ],
+      "start_time": "09:00",
+      "end_time": "14:00",
+      "slot_duration_minutes": 30,
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "name": "Dr. Sneha Gupta [TEST]",
+      "department": "Dermatology",
+      "department_id": 4,
+      "fee": 700,
+      "available_days": [
+        "Monday",
+        "Tuesday",
+        "Thursday",
+        "Friday"
+      ],
+      "start_time": "11:00",
+      "end_time": "18:00",
+      "slot_duration_minutes": 20,
+      "is_active": true
+    },
+    {
+      "id": 5,
+      "name": "Dr. Vikram Singh [TEST]",
+      "department": "Pediatrics",
+      "department_id": 5,
+      "fee": 600,
+      "available_days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "start_time": "09:00",
+      "end_time": "13:00",
+      "slot_duration_minutes": 30,
+      "is_active": true
+    }
+  ],
+  "patients": [
+    {
+      "id": 1,
+      "phone": "919876543210",
+      "name": "Test Patient Aarav [SYNTHETIC]",
+      "email": "aarav.test@example.com",
+      "gender": "male",
+      "is_active": true,
+      "created_at": "2026-11-06T21:19:13.157Z"
+    },
+    {
+      "id": 2,
+      "phone": "919876543211",
+      "name": "Test Patient Diya [SYNTHETIC]",
+      "email": "diya.test@example.com",
+      "gender": "female",
+      "is_active": true,
+      "created_at": "2026-11-08T21:19:13.157Z"
+    },
+    {
+      "id": 3,
+      "phone": "919876543212",
+      "name": "Test Patient Rohan [SYNTHETIC]",
+      "email": "rohan.test@example.com",
+      "gender": "male",
+      "is_active": true,
+      "created_at": "2026-11-10T21:19:13.157Z"
+    },
+    {
+      "phone": "+919876543210",
+      "name": "Integration Test Patient",
+      "last_message_at": "2026-11-11T21:54:23.911Z",
+      "id": 4,
+      "created_at": "2026-11-11T21:19:13.587Z",
+      "updated_at": "2026-11-11T21:54:23.911Z"
+    },
+    {
+      "phone": "+919988776655",
+      "name": "Test Booking Patient",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:19:16.067Z",
+      "id": 5,
+      "created_at": "2026-11-11T21:19:16.067Z"
+    },
+    {
+      "phone": "+919988772092",
+      "name": "Test Booking Patient",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:30:14.491Z",
+      "id": 6,
+      "created_at": "2026-11-11T21:30:14.491Z"
+    },
+    {
+      "phone": "+919988779162",
+      "name": "Test Booking Patient",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:31:14.769Z",
+      "id": 7,
+      "created_at": "2026-11-11T21:31:14.769Z"
+    },
+    {
+      "phone": "+919988778576",
+      "name": "Test Booking Patient",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:43:22.494Z",
+      "id": 8,
+      "created_at": "2026-11-11T21:43:22.494Z"
+    },
+    {
+      "phone": "+919111222333",
+      "name": "Concurrent Patient Alpha",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:54:23.841Z",
+      "id": 9,
+      "created_at": "2026-11-11T21:54:23.841Z"
+    },
+    {
+      "phone": "+919111222444",
+      "name": "Concurrent Patient Beta",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:54:23.846Z",
+      "id": 10,
+      "created_at": "2026-11-11T21:54:23.846Z"
+    },
+    {
+      "phone": "+919998887776",
+      "name": "Cancel Test Patient",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:54:23.862Z",
+      "id": 11,
+      "created_at": "2026-11-11T21:54:23.862Z"
+    },
+    {
+      "phone": "+919988778484",
+      "name": "Test Booking Patient",
+      "is_active": true,
+      "last_message_at": "2026-11-11T21:54:59.337Z",
+      "id": 12,
+      "created_at": "2026-11-11T21:54:59.338Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": 1,
+      "patient_id": 1,
+      "doctor_id": 1,
+      "slot_time": "2026-11-12T05:00:00.000Z",
+      "status": "confirmed",
+      "source": "whatsapp",
+      "reminder_24h_sent": true,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-10T21:19:13.157Z"
+    },
+    {
+      "id": 2,
+      "patient_id": 2,
+      "doctor_id": 2,
+      "slot_time": "2026-11-12T09:30:00.000Z",
+      "status": "confirmed",
+      "source": "dashboard",
+      "reminder_24h_sent": true,
+      "reminder_2h_sent": true,
+      "confirmed_via_call": true,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-09T21:19:13.157Z"
+    },
+    {
+      "id": 3,
+      "patient_id": 3,
+      "doctor_id": 3,
+      "slot_time": "2026-11-13T06:00:00.000Z",
+      "status": "confirmed",
+      "source": "whatsapp",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:19:13.157Z"
+    },
+    {
+      "id": 4,
+      "patient_id": 1,
+      "doctor_id": 4,
+      "slot_time": "2026-11-11T18:19:13.157Z",
+      "status": "completed",
+      "source": "dashboard",
+      "reminder_24h_sent": true,
+      "reminder_2h_sent": true,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": true,
+      "completed_at": "2026-11-11T18:49:13.157Z",
+      "retry_count": 0,
+      "created_at": "2026-11-08T21:19:13.157Z"
+    },
+    {
+      "patient_id": 5,
+      "doctor_id": 1,
+      "slot_time": "2026-11-24T06:30:00.000Z",
+      "status": "confirmed",
+      "source": "unit_test",
+      "notes": "Initial test appointment",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:19:16.071Z",
+      "id": 5
+    },
+    {
+      "patient_id": 6,
+      "doctor_id": 1,
+      "slot_time": "2027-01-29T06:30:00.000Z",
+      "status": "confirmed",
+      "source": "unit_test",
+      "notes": "Initial test appointment",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:30:14.500Z",
+      "id": 6
+    },
+    {
+      "patient_id": 7,
+      "doctor_id": 1,
+      "slot_time": "2027-02-15T06:30:00.000Z",
+      "status": "confirmed",
+      "source": "unit_test",
+      "notes": "Initial test appointment",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:31:14.774Z",
+      "id": 7
+    },
+    {
+      "patient_id": 8,
+      "doctor_id": 1,
+      "slot_time": "2027-03-10T06:30:00.000Z",
+      "status": "confirmed",
+      "source": "unit_test",
+      "notes": "Initial test appointment",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:43:22.499Z",
+      "id": 8
+    },
+    {
+      "patient_id": 9,
+      "doctor_id": 1,
+      "slot_time": "2027-02-01T05:00:00.000Z",
+      "status": "confirmed",
+      "source": "adversarial_test",
+      "notes": "",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:54:23.850Z",
+      "id": 9
+    },
+    {
+      "patient_id": 11,
+      "doctor_id": 1,
+      "slot_time": "2027-04-12T09:00:00.000Z",
+      "status": "cancelled",
+      "source": "adversarial_test",
+      "notes": " [Cancelled: Adversarial audit verification]",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:54:23.866Z",
+      "id": 10,
+      "updated_at": "2026-11-11T21:54:23.880Z"
+    },
+    {
+      "patient_id": 12,
+      "doctor_id": 1,
+      "slot_time": "2027-02-11T06:30:00.000Z",
+      "status": "confirmed",
+      "source": "unit_test",
+      "notes": "Initial test appointment",
+      "reminder_24h_sent": false,
+      "reminder_2h_sent": false,
+      "confirmed_via_call": false,
+      "rescheduled": false,
+      "feedback_sent": false,
+      "retry_count": 0,
+      "created_at": "2026-11-11T21:54:59.345Z",
+      "id": 11
+    }
+  ],
+  "reports": [
+    {
+      "id": 1,
+      "patient_id": 1,
+      "report_type": "Complete Blood Count (CBC)",
+      "report_url": "https://storage.hospital.internal/reports/cbc_test_patient_1.pdf",
+      "secure_token": "a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0",
+      "expires_at": "2026-11-17T21:19:13.157Z",
+      "is_critical": false,
+      "doctor_notes": "Hemoglobin slightly low, all other parameters within normal limits.",
+      "is_revoked": true,
+      "access_count": 1,
+      "created_at": "2026-11-10T21:19:13.157Z",
+      "updated_at": "2026-11-11T21:27:04.386Z"
+    },
+    {
+      "id": 2,
+      "patient_id": 2,
+      "report_type": "Lipid Profile & ECG",
+      "report_url": "https://storage.hospital.internal/reports/ecg_test_patient_2.pdf",
+      "secure_token": "f9e8d7c6b5a4031234567890abcdef1234567890abcdef1234567890abcdef12",
+      "expires_at": "2026-11-16T21:19:13.157Z",
+      "is_critical": true,
+      "doctor_notes": "Elevated LDL cholesterol. Follow up required urgently.",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T09:19:13.157Z",
+      "updated_at": "2026-11-11T21:27:04.386Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Complete Blood Count (CBC)",
+      "report_url": "https://storage.hospital.test/reports/cbc_test_sample.pdf",
+      "secure_token": "bc27c4d0ace0f279112bc6ac2b6b82034212a6fdf7cad0f9e9fd1de97a31dd86",
+      "expires_at": "2026-11-18T21:19:17.989Z",
+      "is_critical": false,
+      "doctor_notes": "WBC within normal range",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:19:17.989Z",
+      "id": 3,
+      "updated_at": "2026-11-11T21:27:04.386Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Lipid Profile",
+      "report_url": "https://storage.hospital.test/reports/lipid_sample.pdf",
+      "secure_token": "e0d3285cb2e39ab5c0468a735ca1e1751b6293aa7cb4b4d6a0d597c50767bd0c",
+      "expires_at": "2026-11-18T21:19:18.000Z",
+      "is_critical": false,
+      "doctor_notes": "",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:19:18.000Z",
+      "id": 4,
+      "updated_at": "2026-11-11T21:27:04.386Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Complete Blood Count (CBC)",
+      "report_url": "https://storage.hospital.test/reports/cbc_test_sample.pdf",
+      "secure_token": "1859e1c01cce29dfab51446b02dd0417644891066fa1aa6a7ab16799fccd1dc4",
+      "expires_at": "2026-11-18T21:27:04.357Z",
+      "is_critical": false,
+      "doctor_notes": "WBC within normal range",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:27:04.358Z",
+      "id": 5,
+      "updated_at": "2026-11-11T21:27:04.386Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Lipid Profile",
+      "report_url": "https://storage.hospital.test/reports/lipid_sample.pdf",
+      "secure_token": "69b8f29ddc92a42fe16b52bab68230f3cb3e49de132c91e13ca444f003465c98",
+      "expires_at": "2026-11-18T21:27:04.377Z",
+      "is_critical": false,
+      "doctor_notes": "",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:27:04.377Z",
+      "id": 6,
+      "updated_at": "2026-11-11T21:27:04.386Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Complete Blood Count (CBC)",
+      "report_url": "https://storage.hospital.test/reports/cbc_test_sample.pdf",
+      "secure_token": "ea7fee8c63b041740e913373cabf4f2722590921abde690511f14bcb180b17aa",
+      "expires_at": "2026-11-18T21:30:07.722Z",
+      "is_critical": false,
+      "doctor_notes": "WBC within normal range",
+      "is_revoked": false,
+      "access_count": 1,
+      "created_at": "2026-11-11T21:30:07.723Z",
+      "id": 7,
+      "accessed_at": "2026-11-11T21:30:07.733Z",
+      "updated_at": "2026-11-11T21:30:07.734Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Lipid Profile",
+      "report_url": "https://storage.hospital.test/reports/lipid_sample.pdf",
+      "secure_token": "13d7024df19371f47465786c6ecab3c44700ec01571bffe997313088a911e43d",
+      "expires_at": "2026-11-18T21:30:07.752Z",
+      "is_critical": false,
+      "doctor_notes": "",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:30:07.752Z",
+      "id": 8,
+      "updated_at": "2026-11-11T21:30:07.761Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Complete Blood Count (CBC)",
+      "report_url": "https://storage.hospital.test/reports/cbc_test_sample.pdf",
+      "secure_token": "8636110e4bd914edd93f11963d4a59de55bb5dcbf27688d15c13f9795780ff8b",
+      "expires_at": "2026-11-18T21:31:16.728Z",
+      "is_critical": false,
+      "doctor_notes": "WBC within normal range",
+      "is_revoked": false,
+      "access_count": 1,
+      "created_at": "2026-11-11T21:31:16.728Z",
+      "id": 9,
+      "accessed_at": "2026-11-11T21:31:16.738Z",
+      "updated_at": "2026-11-11T21:31:16.739Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Lipid Profile",
+      "report_url": "https://storage.hospital.test/reports/lipid_sample.pdf",
+      "secure_token": "635d98832132868a979b0574e3ca3152dfe2811a993f9edd85c29e1e7b1a8143",
+      "expires_at": "2026-11-18T21:31:16.747Z",
+      "is_critical": false,
+      "doctor_notes": "",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:31:16.747Z",
+      "id": 10,
+      "updated_at": "2026-11-11T21:31:16.754Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Complete Blood Count (CBC)",
+      "report_url": "https://storage.hospital.test/reports/cbc_test_sample.pdf",
+      "secure_token": "29a3eff6b6b21951a6c66e246eeaadeee9d3b1af5871c2743628a5283b700c79",
+      "expires_at": "2026-11-18T21:43:18.057Z",
+      "is_critical": false,
+      "doctor_notes": "WBC within normal range",
+      "is_revoked": false,
+      "access_count": 1,
+      "created_at": "2026-11-11T21:43:18.057Z",
+      "id": 11,
+      "accessed_at": "2026-11-11T21:43:18.071Z",
+      "updated_at": "2026-11-11T21:43:18.071Z"
+    },
+    {
+      "patient_id": 1,
+      "report_type": "Lipid Profile",
+      "report_url": "https://storage.hospital.test/reports/lipid_sample.pdf",
+      "secure_token": "ec326482c86a9612ddb88f64846dfc931ce819b8fb9ecf4773176345dd3de322",
+      "expires_at": "2026-11-18T21:43:18.084Z",
+      "is_critical": false,
+      "doctor_notes": "",
+      "is_revoked": true,
+      "access_count": 0,
+      "created_at": "2026-11-11T21:43:18.084Z",
+      "id": 12,
+      "updated_at": "2026-11-11T21:43:18.094Z"
+    }
+  ],
+  "feedback": [
+    {
+      "id": 1,
+      "appointment_id": 4,
+      "patient_id": 1,
+      "patient_phone": "919876543210",
+      "rating": 5,
+      "comment": "Very polite doctor and zero waiting time. Highly satisfied!",
+      "requested_at": "2026-11-11T19:19:13.157Z",
+      "responded_at": "2026-11-11T19:49:13.157Z",
+      "created_at": "2026-11-11T19:19:13.157Z"
+    }
+  ],
+  "call_logs": [
+    {
+      "id": 1,
+      "appointment_id": 2,
+      "patient_phone": "919876543211",
+      "call_type": "reminder_2h",
+      "status": "completed",
+      "outcome": "confirmed",
+      "transcript_summary": "Patient confirmed arrival for 2:30 PM appointment with Dr. Priya Patel.",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T19:19:13.157Z"
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:27:18.937Z",
+      "id": 2
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:32:38.489Z",
+      "id": 3
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:34:10.122Z",
+      "id": 4
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:35:57.380Z",
+      "id": 5
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:37:15.911Z",
+      "id": 6
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:43:30.958Z",
+      "id": 7
+    },
+    {
+      "appointment_id": 2,
+      "patient_phone": "919876543211",
+      "call_type": "manual_retry",
+      "status": "queued",
+      "outcome": null,
+      "transcript_summary": "Manual outbound retry triggered by authorized staff.",
+      "created_at": "2026-11-11T21:54:23.925Z",
+      "id": 8
+    },
+    {
+      "appointment_id": null,
+      "patient_phone": "",
+      "call_type": "status_callback",
+      "status": "completed",
+      "outcome": "unknown",
+      "transcript_summary": "",
+      "duration_seconds": 45,
+      "created_at": "2026-11-11T21:55:03.844Z",
+      "id": 9
+    }
+  ],
+  "escalations": [
+    {
+      "id": 1,
+      "patient_phone": "919876543212",
+      "reason": "Patient asked about chest tightness and shortness of breath while inquiring about cardiology slot.",
+      "urgency": "urgent",
+      "resolved": false,
+      "created_at": "2026-11-11T20:39:13.157Z"
+    }
+  ],
+  "error_log": [
+    {
+      "id": 1,
+      "source": "whatsapp_webhook",
+      "patient_phone": "919876543299",
+      "error_detail": "WhatsApp API rate limit warning: message delivery queued for retry.",
+      "severity": "warning",
+      "resolved": false,
+      "created_at": "2026-11-11T18:19:13.157Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "11111111-2222-3333-4444-555555555555",
+      "email": "admin@hospital.test",
+      "password_hash": "$2a$10$8ArQNrhgfKG9fG0./gZLXe9PHt3Qhlhds5p4/KiVnqXIsto1/Sc76",
+      "name": "Hospital Administrator [TEST]",
+      "role": "admin",
+      "is_active": true,
+      "created_at": "2026-11-11T21:19:13.157Z",
+      "last_login_at": "2026-11-11T22:12:20.599Z",
+      "updated_at": "2026-11-11T22:12:20.599Z"
+    },
+    {
+      "id": "22222222-3333-4444-5555-666666666666",
+      "email": "reception@hospital.test",
+      "password_hash": "$2a$10$8ArQNrhgfKG9fG0./gZLXe9PHt3Qhlhds5p4/KiVnqXIsto1/Sc76",
+      "name": "Front Desk Officer [TEST]",
+      "role": "receptionist",
+      "is_active": true,
+      "created_at": "2026-11-11T21:19:13.157Z"
+    },
+    {
+      "id": "33333333-4444-5555-6666-777777777777",
+      "email": "doctor@hospital.test",
+      "password_hash": "$2a$10$8ArQNrhgfKG9fG0./gZLXe9PHt3Qhlhds5p4/KiVnqXIsto1/Sc76",
+      "name": "Dr. Amit Sharma [TEST]",
+      "role": "doctor",
+      "is_active": true,
+      "created_at": "2026-11-11T21:19:13.157Z"
+    }
+  ],
+  "audit_log": [
+    {
+      "id": 1,
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "SYSTEM_INIT",
+      "resource_type": "platform",
+      "resource_id": "init",
+      "details": {
+        "status": "Database schema verified and operational"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:19:13.157Z"
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "5",
+      "details": {
+        "patientPhone": "+919988776655",
+        "doctorId": 1,
+        "slotTime": "2026-11-24T06:30:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:19:16.076Z",
+      "id": 2
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "3",
+      "details": {
+        "patientId": 1,
+        "reportType": "Complete Blood Count (CBC)",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:19:17.993Z",
+      "id": 3
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "4",
+      "details": {
+        "patientId": 1,
+        "reportType": "Lipid Profile",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:19:18.004Z",
+      "id": 4
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "5",
+      "details": {
+        "patientId": 1,
+        "reportType": "Complete Blood Count (CBC)",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:27:04.364Z",
+      "id": 5
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "6",
+      "details": {
+        "patientId": 1,
+        "reportType": "Lipid Profile",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:27:04.381Z",
+      "id": 6
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:27:18.942Z",
+      "id": 7
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "7",
+      "details": {
+        "patientId": 1,
+        "reportType": "Complete Blood Count (CBC)",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:30:07.727Z",
+      "id": 8
+    },
+    {
+      "user_id": null,
+      "action": "ACCESS_REPORT",
+      "resource_type": "report",
+      "resource_id": "7",
+      "details": {
+        "accessCount": 1
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:30:07.738Z",
+      "id": 9
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "8",
+      "details": {
+        "patientId": 1,
+        "reportType": "Lipid Profile",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:30:07.757Z",
+      "id": 10
+    },
+    {
+      "user_id": null,
+      "action": "REVOKE_REPORT_ACCESS",
+      "resource_type": "report",
+      "resource_id": "8",
+      "details": {
+        "reason": "Manually revoked by staff"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:30:07.765Z",
+      "id": 11
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "6",
+      "details": {
+        "patientPhone": "+919988772092",
+        "doctorId": 1,
+        "slotTime": "2027-01-29T06:30:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:30:14.506Z",
+      "id": 12
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "7",
+      "details": {
+        "patientPhone": "+919988779162",
+        "doctorId": 1,
+        "slotTime": "2027-02-15T06:30:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:31:14.778Z",
+      "id": 13
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "9",
+      "details": {
+        "patientId": 1,
+        "reportType": "Complete Blood Count (CBC)",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:31:16.733Z",
+      "id": 14
+    },
+    {
+      "user_id": null,
+      "action": "ACCESS_REPORT",
+      "resource_type": "report",
+      "resource_id": "9",
+      "details": {
+        "accessCount": 1
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:31:16.743Z",
+      "id": 15
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "10",
+      "details": {
+        "patientId": 1,
+        "reportType": "Lipid Profile",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:31:16.751Z",
+      "id": 16
+    },
+    {
+      "user_id": null,
+      "action": "REVOKE_REPORT_ACCESS",
+      "resource_type": "report",
+      "resource_id": "10",
+      "details": {
+        "reason": "Manually revoked by staff"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:31:16.758Z",
+      "id": 17
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:32:38.496Z",
+      "id": 18
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:34:10.129Z",
+      "id": 19
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "USER_LOGIN",
+      "resource_type": "user",
+      "resource_id": "11111111-2222-3333-4444-555555555555",
+      "details": {
+        "email": "admin@hospital.test"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:35:57.182Z",
+      "id": 20
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:35:57.387Z",
+      "id": 21
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "USER_LOGIN",
+      "resource_type": "user",
+      "resource_id": "11111111-2222-3333-4444-555555555555",
+      "details": {
+        "email": "admin@hospital.test"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:37:15.704Z",
+      "id": 22
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:37:15.916Z",
+      "id": 23
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "11",
+      "details": {
+        "patientId": 1,
+        "reportType": "Complete Blood Count (CBC)",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:43:18.064Z",
+      "id": 24
+    },
+    {
+      "user_id": null,
+      "action": "ACCESS_REPORT",
+      "resource_type": "report",
+      "resource_id": "11",
+      "details": {
+        "accessCount": 1
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:43:18.076Z",
+      "id": 25
+    },
+    {
+      "user_id": null,
+      "action": "CREATE_REPORT",
+      "resource_type": "report",
+      "resource_id": "12",
+      "details": {
+        "patientId": 1,
+        "reportType": "Lipid Profile",
+        "isCritical": false
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:43:18.089Z",
+      "id": 26
+    },
+    {
+      "user_id": null,
+      "action": "REVOKE_REPORT_ACCESS",
+      "resource_type": "report",
+      "resource_id": "12",
+      "details": {
+        "reason": "Manually revoked by staff"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:43:18.099Z",
+      "id": 27
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "8",
+      "details": {
+        "patientPhone": "+919988778576",
+        "doctorId": 1,
+        "slotTime": "2027-03-10T06:30:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:43:22.503Z",
+      "id": 28
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "USER_LOGIN",
+      "resource_type": "user",
+      "resource_id": "11111111-2222-3333-4444-555555555555",
+      "details": {
+        "email": "admin@hospital.test"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:43:30.465Z",
+      "id": 29
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:43:30.962Z",
+      "id": 30
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "USER_LOGIN",
+      "resource_type": "user",
+      "resource_id": "11111111-2222-3333-4444-555555555555",
+      "details": {
+        "email": "admin@hospital.test"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:54:23.800Z",
+      "id": 31
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "9",
+      "details": {
+        "patientPhone": "+919111222333",
+        "doctorId": 1,
+        "slotTime": "2027-02-01T05:00:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:54:23.855Z",
+      "id": 32
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "10",
+      "details": {
+        "patientPhone": "+919998887776",
+        "doctorId": 1,
+        "slotTime": "2027-04-12T09:00:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:54:23.870Z",
+      "id": 33
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "CANCEL_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "10",
+      "details": {
+        "reason": "Adversarial audit verification"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:54:23.884Z",
+      "id": 34
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "STAFF_MESSAGE_SENT",
+      "resource_type": "message",
+      "resource_id": "+919876543210",
+      "details": {
+        "textLength": 40
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:54:23.915Z",
+      "id": 35
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "TRIGGER_CALL_RETRY",
+      "resource_type": "call",
+      "resource_id": "1",
+      "details": {
+        "patientPhone": "919876543211",
+        "originalCallId": "1"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:54:23.930Z",
+      "id": 36
+    },
+    {
+      "user_id": null,
+      "action": "BOOK_APPOINTMENT",
+      "resource_type": "appointment",
+      "resource_id": "11",
+      "details": {
+        "patientPhone": "+919988778484",
+        "doctorId": 1,
+        "slotTime": "2027-02-11T06:30:00.000Z"
+      },
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-11-11T21:54:59.356Z",
+      "id": 37
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "USER_LOGIN",
+      "resource_type": "user",
+      "resource_id": "11111111-2222-3333-4444-555555555555",
+      "details": {
+        "email": "admin@hospital.test"
+      },
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:55:03.336Z",
+      "id": 38
+    },
+    {
+      "user_id": null,
+      "action": "VOICE_CALLBACK_PROCESSED",
+      "resource_type": "call",
+      "resource_id": "call_test_int_123",
+      "details": {},
+      "ip_address": "::ffff:127.0.0.1",
+      "created_at": "2026-11-11T21:55:03.848Z",
+      "id": 39
+    },
+    {
+      "user_id": "11111111-2222-3333-4444-555555555555",
+      "action": "USER_LOGIN",
+      "resource_type": "user",
+      "resource_id": "11111111-2222-3333-4444-555555555555",
+      "details": {
+        "email": "admin@hospital.test"
+      },
+      "ip_address": "::1",
+      "created_at": "2026-11-11T22:12:20.600Z",
+      "id": 40
+    }
+  ],
+  "message_log": [
+    {
+      "id": 1,
+      "patient_phone": "919876543210",
+      "direction": "inbound",
+      "message_type": "text",
+      "content": "Hi, I need to check my appointment status for today.",
+      "wa_message_id": "wamid.HBgMOTE5ODc2NTQzMjEwFQIAEhgUM0FBQzI5QkRDMUZC",
+      "status": "received",
+      "created_at": "2026-11-11T17:19:13.157Z"
+    },
+    {
+      "id": 2,
+      "patient_phone": "919876543210",
+      "direction": "outbound",
+      "message_type": "text",
+      "content": "Namaste Aarav ji! Aapka appointment Dr. Amit Sharma ke saath aaj subah 10:00 AM par confirmed hai. Room 102 me report karein.",
+      "wa_message_id": "wamid.HBgMOTE5ODc2NTQzMjEwFQIAERgUM0FBQzI5QkRDMUZD",
+      "status": "delivered",
+      "created_at": "2026-11-11T17:19:18.157Z"
+    },
+    {
+      "patient_phone": "+919876543210",
+      "direction": "inbound",
+      "message_type": "text",
+      "content": "Hello, I want to book an appointment",
+      "wa_message_id": "wamid.HBgLMTIzNDU2",
+      "status": "received",
+      "created_at": "2026-11-11T21:19:13.578Z",
+      "id": 3
+    },
+    {
+      "patient_phone": "+919876543210",
+      "direction": "staff",
+      "message_type": "text",
+      "content": "This is an adversarial test staff reply.",
+      "wa_message_id": "manual_staff_1794434063907",
+      "status": "sent",
+      "metadata": {
+        "sent_by": "admin@hospital.test"
+      },
+      "created_at": "2026-11-11T21:54:23.907Z",
+      "id": 4
+    }
+  ]
+}

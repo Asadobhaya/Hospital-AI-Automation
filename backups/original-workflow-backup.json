@@ -1,0 +1,11 @@
+{
+  "name": "Hospital AI Automation — Appointments + WhatsApp Support + Voice Calls + Reports + Feedback",
+  "nodes": [
+    {"parameters":{"content":"## 🏥 Hospital AI Automation — End-to-End Workflow (5 Use Cases)\nPriority order match: 1) Appointment+Follow-up  2) WhatsApp AI Support  3) AI Voice Calling (via apna Server API)  4) Reports/Prescription  5) Feedback+Review\n\n**IMPORTANT — is JSON ko n8n me import karne ke baad:**\n1. Settings gear (top-right) → Variables/Environment me neeche di gayi ENV VARS set karo (ya n8n instance ke .env me).\n2. WhatsApp send/AI Agent tool nodes me koi bhi red/warning aaye to sirf URL/credential dobara select karo — logic touch mat karo.\n3. Sabse neeche \" SEPARATE ERROR WORKFLOW\" section hai — usse copy karke NAYI workflow me paste karo, phir is main workflow ki Settings → Error Workflow me select karo.\n4. Supabase me neeche di gayi tables banao (chat reply me poora SQL diya hai).\n5. Meta Business Manager me WhatsApp message TEMPLATES approve karwao (naam is workflow me hi likhe hain — chat reply me exact text diya hai).\n\nIs ek hi workflow ke andar 4 trigger points hain (independent, ek doosre ko block nahi karte): WhatsApp Webhook, Voice-Call-Status Webhook, Report-Ready Webhook, aur 3 Schedule Triggers.","height":280,"width":3900},"id":"c121488b","name":"Overview","type":"n8n-nodes-base.stickyNote","typeVersion":1,"position":[-240,-560]}
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {"executionOrder":"v1","timezone":"Asia/Kolkata","saveManualExecutions":true},
+  "pinData": {},
+  "meta": {"instanceId":"hospital-ai-automation"}
+}

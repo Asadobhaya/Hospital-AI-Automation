@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment files (NEVER commit)
+.env
+.env.local
+.env.development
+.env.production
+*.env
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Secrets and keys
+*.pem
+*.key
+*.cert
+*.crt
+
+# Database
+*.sqlite
+*.db
+
+# Embedded / third-party tools
+gsd-core/
+*.sqlite
+*.db
+
+# Backups (keep tracked but be careful with content)
+# backups/ — tracked for structure, but don't add sensitive data
