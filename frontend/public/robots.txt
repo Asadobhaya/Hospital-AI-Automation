@@ -27,4 +27,4 @@ User-agent: ClaudeBot
 Allow: /
 
 # Canonical Sitemap
-Sitemap: https://medipulseai.vercel.app/sitemap.xml
+Sitemap: https://medipulsehealth.vercel.app/sitemap.xml
