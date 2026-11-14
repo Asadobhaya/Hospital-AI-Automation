@@ -49,9 +49,11 @@ export default function Login() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Brand Header */}
         <div className="flex justify-center items-center gap-3">
-          <div className="w-11 h-11 bg-[#2F78C8] rounded-xl flex items-center justify-center text-white shadow-xs">
-            <Activity className="w-6 h-6" aria-hidden="true" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="MediPulse AI Logo"
+            className="w-12 h-12 rounded-xl object-cover shadow-sm border border-[#DFE6EE] bg-white p-0.5"
+          />
           <span className="text-2xl font-bold text-[#173A5E] tracking-tight">
             MediPulse <span className="text-[#2F78C8] font-semibold">AI</span>
           </span>

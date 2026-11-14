@@ -51,9 +51,11 @@ export default function PublicReportView() {
       <main className="sm:mx-auto sm:w-full sm:max-w-xl">
         {/* Brand Header */}
         <header className="flex justify-center items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#173A5E] flex items-center justify-center text-white shadow-sm" aria-hidden="true">
-            <Activity className="w-5 h-5 text-[#2F78C8]" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="MediPulse AI Logo"
+            className="w-10 h-10 rounded-xl object-cover shadow-sm border border-[#DFE6EE] bg-white p-0.5"
+          />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-[#172B3A]">
               MediPulse <span className="text-[#2F78C8] font-semibold">Diagnostic Portal</span>

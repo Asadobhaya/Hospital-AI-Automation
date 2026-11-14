@@ -69,9 +69,11 @@ export default function Sidebar({ open, onClose }) {
         {/* Brand Banner */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#234A74]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#2F78C8] rounded-lg flex items-center justify-center text-white shadow-xs">
-              <Activity className="w-5 h-5 text-white" aria-hidden="true" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="MediPulse AI Logo"
+              className="w-9 h-9 rounded-lg object-cover shadow-xs border border-white/20 bg-white"
+            />
             <div>
               <span className="text-base font-bold text-white tracking-tight">
                 MediPulse <span className="text-[#A7CEF0] font-semibold">AI</span>
