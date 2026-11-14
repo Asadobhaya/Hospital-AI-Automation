@@ -39,8 +39,13 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
-    // Allow localhost/127.0.0.1 on any port in dev, or specific configured origin
-    if (config.env === 'development' || origin === config.cors.origin || origin.startsWith('http://localhost:')) {
+    // Allow localhost in dev, vercel.app preview/production domains, or configured origin
+    if (
+      config.env === 'development' ||
+      origin === config.cors.origin ||
+      origin.startsWith('http://localhost:') ||
+      origin.endsWith('.vercel.app')
+    ) {
       return callback(null, true);
     }
     return callback(new Error('Not allowed by CORS'));
