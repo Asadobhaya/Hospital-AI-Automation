@@ -1,3 +1,5 @@
+// src/components/Sidebar.jsx — Accessible Clinical Navigation Sidebar
+import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -31,6 +33,16 @@ export default function Sidebar({ open, onClose }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  // Close on Escape key in mobile drawer view
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -38,44 +50,47 @@ export default function Sidebar({ open, onClose }) {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile Backdrop Overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden transition-opacity"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
+      {/* Navigation Drawer */}
       <aside
+        aria-label="Sidebar Navigation"
         className={`fixed top-0 left-0 z-50 h-full w-64 bg-slate-900 border-r border-slate-800 
-          flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto
-          ${open ? 'translate-x-0' : '-translate-x-full'}`}
+          flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-auto
+          ${open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-primary-500/20">
-              <Activity className="w-5 h-5 text-white" />
+        {/* Brand Banner */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-primary-600/30">
+              <Activity className="w-5 h-5 text-white" aria-hidden="true" />
             </div>
             <div>
-              <span className="text-lg font-bold text-white tracking-tight">
-                MediPulse <span className="text-primary-400 font-medium">AI</span>
+              <span className="text-base font-bold text-white tracking-tight">
+                MediPulse <span className="text-primary-400 font-semibold">AI</span>
               </span>
-              <p className="text-[11px] text-slate-400 leading-none">Clinical Operations</p>
+              <p className="text-[11px] text-slate-400 leading-tight">Clinical Operations</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
-            aria-label="Close sidebar"
+            className="lg:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition focus-visible:ring-2 focus-visible:ring-primary-500"
+            aria-label="Close navigation sidebar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {/* Navigation Items */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Main Navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -85,27 +100,28 @@ export default function Sidebar({ open, onClose }) {
                 end={item.to === '/'}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                  `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition min-h-[44px] ${
                     isActive
-                      ? 'bg-primary-600/15 text-primary-400 border border-primary-500/30 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                      ? 'bg-primary-600/20 text-primary-300 border border-primary-500/30 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 border border-transparent'
                   }`
                 }
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>{item.label}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        {/* Footer with Logout */}
+        {/* Footer / Sign Out */}
         <div className="p-3 border-t border-slate-800">
           <button
+            type="button"
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3.5 py-2.5 text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-950/20 rounded-xl transition cursor-pointer"
+            className="flex items-center gap-3 w-full px-3.5 py-3 text-sm font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-950/20 rounded-xl transition cursor-pointer min-h-[44px] focus-visible:ring-2 focus-visible:ring-rose-500"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
+            <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span>Sign Out</span>
           </button>
         </div>

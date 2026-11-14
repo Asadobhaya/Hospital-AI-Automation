@@ -1,4 +1,7 @@
+// src/components/ConfirmDialog.jsx — Accessible Action Confirmation Dialog
+import React from 'react';
 import Modal from './Modal';
+import Button from './Button';
 
 export default function ConfirmDialog({
   open,
@@ -15,28 +18,24 @@ export default function ConfirmDialog({
   return (
     <Modal open={open ?? isOpen} onClose={onClose} title={title} size="sm">
       <div className="space-y-4">
-        <p className="text-sm text-slate-300">{message}</p>
-        <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
-          <button
-            type="button"
+        <p className="text-sm text-slate-300 leading-relaxed">{message}</p>
+        <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition cursor-pointer"
           >
             {cancelText}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant={danger ? 'danger' : 'primary'}
+            size="sm"
             onClick={onConfirm}
-            disabled={loading}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-xl transition disabled:opacity-50 cursor-pointer shadow-sm ${
-              danger
-                ? 'bg-red-600 hover:bg-red-500 shadow-red-600/20'
-                : 'bg-primary-600 hover:bg-primary-500 shadow-primary-600/20'
-            }`}
+            loading={loading}
           >
-            {loading ? 'Processing...' : confirmText}
-          </button>
+            {confirmText}
+          </Button>
         </div>
       </div>
     </Modal>

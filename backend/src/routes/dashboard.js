@@ -12,13 +12,32 @@ const response = require('../utils/response');
  */
 router.get('/stats', requireAuth, async (req, res, next) => {
   try {
-    const { data: allAppointments } = await db.from('appointments').select('*');
-    const { data: allCalls } = await db.from('call_logs').select('*');
-    const { data: recentErrors } = await db.from('error_log').select('*').order('created_at', { ascending: false }).limit(5);
-    const { data: pendingEscalations } = await db.from('escalations').select('*').eq('resolved', false);
+    let appointments = [];
+    let calls = [];
+    let recentErrors = [];
+    let pendingEscalations = [];
 
-    const appointments = allAppointments || [];
-    const calls = allCalls || [];
+    try {
+      const resAppts = await db.from('appointments').select('*');
+      appointments = resAppts?.data || [];
+    } catch (err) {
+      // Keep empty if query fails
+    }
+
+    try {
+      const resCalls = await db.from('call_logs').select('*');
+      calls = resCalls?.data || [];
+    } catch (err) {}
+
+    try {
+      const resErrors = await db.from('error_log').select('*').order('created_at', { ascending: false }).limit(5);
+      recentErrors = resErrors?.data || [];
+    } catch (err) {}
+
+    try {
+      const resEsc = await db.from('escalations').select('*').eq('resolved', false);
+      pendingEscalations = resEsc?.data || [];
+    } catch (err) {}
 
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();

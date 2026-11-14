@@ -1,57 +1,138 @@
-import { useEffect, useRef } from 'react';
+// src/components/Modal.jsx — Production Accessible Modal Dialog
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
-export default function Modal({ open, isOpen, onClose, title, children, size = 'md' }) {
+export default function Modal({
+  open,
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  description = '',
+}) {
   const overlayRef = useRef(null);
+  const modalRef = useRef(null);
+  const previousActiveElement = useRef(null);
   const show = open !== undefined ? open : isOpen;
 
+  // Track and restore focus
   useEffect(() => {
     if (show) {
+      previousActiveElement.current = document.activeElement;
       document.body.style.overflow = 'hidden';
+
+      // Focus first focusable element inside modal after paint
+      setTimeout(() => {
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length > 0) {
+            focusable[0].focus();
+          }
+        }
+      }, 50);
     } else {
       document.body.style.overflow = '';
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus();
+      }
     }
-    return () => { document.body.style.overflow = ''; };
+
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [show]);
 
+  // Escape key and tab key trapping
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
-    if (show) window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    if (!show) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+
+      // Trap focus
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            last.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === last) {
+            first.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [show, onClose]);
 
   if (!show) return null;
 
-  const sizeClass = {
+  const sizeClasses = {
     sm: 'max-w-md',
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
-  }[size] || 'max-w-lg';
+  };
+
+  const selectedSize = sizeClasses[size] || sizeClasses.md;
 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === overlayRef.current) onClose();
+      }}
+      role="presentation"
     >
       <div
-        className={`bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full ${sizeClass} max-h-[90vh] flex flex-col overflow-hidden text-slate-100`}
+        ref={modalRef}
+        className={`bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full ${selectedSize} max-h-[90vh] flex flex-col overflow-hidden text-slate-100 transform transition-all`}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby="modal-title"
+        aria-describedby={description ? 'modal-desc' : undefined}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/80">
-          <h2 className="text-lg font-semibold text-white tracking-tight">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+          <div>
+            <h2 id="modal-title" className="text-lg font-semibold text-white tracking-tight">
+              {title}
+            </h2>
+            {description && (
+              <p id="modal-desc" className="text-xs text-slate-400 mt-0.5">
+                {description}
+              </p>
+            )}
+          </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
-            aria-label="Close"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-500"
+            aria-label="Close dialog"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5 bg-slate-900/90">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-5 bg-slate-900/95">{children}</div>
       </div>
     </div>
   );

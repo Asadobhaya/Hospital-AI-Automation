@@ -5,17 +5,18 @@ import {
   Lock,
   Plus,
   RefreshCw,
-  Search,
-  ExternalLink,
   Copy,
   Check,
-  AlertTriangle,
   Clock,
   ShieldCheck,
-  ShieldX
+  ShieldX,
+  ExternalLink,
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
+import Button from '../components/Button';
+import EmptyState from '../components/EmptyState';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
@@ -25,6 +26,7 @@ export default function Reports() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [copiedToken, setCopiedToken] = useState(null);
+  const [revokingReport, setRevokingReport] = useState(null);
 
   // New Report Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,7 +37,7 @@ export default function Reports() {
     reportType: 'Complete Blood Count (CBC)',
     reportUrl: 'https://storage.hospital.internal/reports/sample_report.pdf',
     doctorNotes: '',
-    isCritical: false
+    isCritical: false,
   });
 
   const fetchReports = async () => {
@@ -44,12 +46,12 @@ export default function Reports() {
       const query = new URLSearchParams({
         page: page.toString(),
         limit: '15',
-        ...(searchTerm && { search: searchTerm })
+        ...(searchTerm && { search: searchTerm }),
       });
 
       const [repRes, patRes] = await Promise.all([
         fetch(`/api/reports?${query.toString()}`, { credentials: 'include' }),
-        fetch('/api/patients?limit=50', { credentials: 'include' })
+        fetch('/api/patients?limit=50', { credentials: 'include' }),
       ]);
 
       if (repRes.ok) {
@@ -89,8 +91,8 @@ export default function Reports() {
           reportType: reportForm.reportType,
           reportUrl: reportForm.reportUrl,
           doctorNotes: reportForm.doctorNotes,
-          isCritical: reportForm.isCritical
-        })
+          isCritical: reportForm.isCritical,
+        }),
       });
 
       const json = await res.json();
@@ -102,7 +104,7 @@ export default function Reports() {
         reportType: 'Complete Blood Count (CBC)',
         reportUrl: 'https://storage.hospital.internal/reports/sample_report.pdf',
         doctorNotes: '',
-        isCritical: false
+        isCritical: false,
       });
       fetchReports();
     } catch (err) {
@@ -112,14 +114,17 @@ export default function Reports() {
     }
   };
 
-  const handleRevoke = async (reportId) => {
-    if (!confirm('Are you sure you want to permanently revoke this access link?')) return;
+  const handleConfirmRevoke = async () => {
+    if (!revokingReport) return;
     try {
-      const res = await fetch(`/api/reports/${reportId}/revoke`, {
+      const res = await fetch(`/api/reports/${revokingReport.id}/revoke`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
       });
-      if (res.ok) fetchReports();
+      if (res.ok) {
+        setRevokingReport(null);
+        fetchReports();
+      }
     } catch (err) {
       console.error(err);
     }
@@ -141,86 +146,90 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Diagnostic Lab Reports</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Automated WhatsApp delivery with 32-byte cryptographic tokens & 7-day auto-expiry
+            Automated delivery with 32-byte cryptographic tokens & 7-day auto-expiry
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={fetchReports}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium border border-slate-700 transition"
-          >
-            <RefreshCw className="w-4 h-4" /> Refresh
-          </button>
-          <button
+          <Button variant="secondary" size="md" onClick={fetchReports} icon={RefreshCw}>
+            Refresh
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium shadow-md shadow-primary-600/20 transition cursor-pointer"
+            icon={Plus}
           >
-            <Plus className="w-4 h-4" /> Issue Lab Report
-          </button>
+            Issue Lab Report
+          </Button>
         </div>
-      </div>
+      </header>
 
-      {/* Security Info Card */}
-      <div className="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl shadow-sm flex items-center justify-between">
+      {/* Security Architecture Note */}
+      <div className="card-surface p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary-500/10 text-primary-400 rounded-xl">
+          <div className="p-2.5 bg-primary-500/10 text-primary-400 rounded-xl shrink-0" aria-hidden="true">
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-white">Cryptographic URL Tokenization Active</h4>
-            <p className="text-xs text-slate-400">Tokens are generated with Node.js crypto.randomBytes(32) — zero guessability or enumeration risks.</p>
+            <h2 className="text-sm font-semibold text-white">Cryptographic URL Tokenization Active</h2>
+            <p className="text-xs text-slate-400">
+              Diagnostic tokens use Node.js crypto.randomBytes(32) — zero guessability or enumeration risks.
+            </p>
           </div>
         </div>
-        <span className="hidden sm:inline-block text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+        <span className="text-xs font-medium text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full whitespace-nowrap">
           Server-Side Expiry Guard
         </span>
       </div>
 
       {/* Reports Table */}
-      <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl shadow-sm overflow-hidden">
+      <section aria-label="Diagnostic Reports" className="card-surface rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-slate-400">
+          <div className="p-12 text-center text-slate-400" role="status">
             <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm">Fetching reports...</p>
           </div>
         ) : reports.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-slate-200">No reports issued yet</h3>
-            <p className="text-xs text-slate-400 mt-1">Issue a lab report to trigger automated WhatsApp delivery.</p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No reports issued yet"
+            message="Issue a diagnostic lab report to generate a secure access token for the patient."
+            actionLabel="Issue Lab Report"
+            onAction={() => setIsModalOpen(true)}
+            actionIcon={Plus}
+          />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-slate-700/80 bg-slate-900/40 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Patient</th>
-                  <th className="py-3.5 px-4">Test / Report Type</th>
-                  <th className="py-3.5 px-4">Validity</th>
-                  <th className="py-3.5 px-4">Access Count</th>
-                  <th className="py-3.5 px-4">Security Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <th scope="col" className="py-3.5 px-5">Patient</th>
+                  <th scope="col" className="py-3.5 px-5">Test / Report Type</th>
+                  <th scope="col" className="py-3.5 px-5">Validity</th>
+                  <th scope="col" className="py-3.5 px-5">Access Count</th>
+                  <th scope="col" className="py-3.5 px-5">Security Status</th>
+                  <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/60 text-sm">
+              <tbody className="divide-y divide-slate-800/70 text-sm">
                 {reports.map((r) => {
                   const isExpired = new Date() > new Date(r.expires_at);
                   const isRevoked = r.is_revoked;
 
                   return (
-                    <tr key={r.id} className="hover:bg-slate-700/30 transition">
-                      <td className="py-3.5 px-4">
+                    <tr key={r.id} className="hover:bg-slate-800/40 transition">
+                      <td className="py-3.5 px-5">
                         <div className="font-medium text-white">{r.patient?.name || `Patient #${r.patient_id}`}</div>
                         <div className="text-xs font-mono text-slate-400">{r.patient?.phone || ''}</div>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <div className="font-medium text-slate-200 flex items-center gap-1.5">
                           {r.is_critical && (
-                            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" title="Critical Result" />
+                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" title="Critical Result" />
                           )}
                           <span>{r.report_type}</span>
                         </div>
@@ -228,49 +237,60 @@ export default function Reports() {
                           <div className="text-xs text-slate-400 truncate max-w-xs">{r.doctor_notes}</div>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-xs">
+                      <td className="py-3.5 px-5 text-xs">
                         <div className="flex items-center gap-1.5 text-slate-300">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                           <span>{calculateDaysRemaining(r.expires_at)}</span>
                         </div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="text-[10px] text-slate-500 mt-0.5">
                           Expires: {new Date(r.expires_at).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-xs font-mono text-slate-300">
+                      <td className="py-3.5 px-5 text-xs font-mono text-slate-300">
                         {r.access_count || 0} views
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         {isRevoked ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-red-400 font-medium">
-                            <ShieldX className="w-3.5 h-3.5" /> Revoked
+                          <span className="inline-flex items-center gap-1 text-xs text-rose-400 font-medium">
+                            <ShieldX className="w-3.5 h-3.5" aria-hidden="true" /> Revoked
                           </span>
                         ) : isExpired ? (
                           <span className="inline-flex items-center gap-1 text-xs text-amber-400 font-medium">
-                            <Clock className="w-3.5 h-3.5" /> Expired
+                            <Clock className="w-3.5 h-3.5" aria-hidden="true" /> Expired
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
-                            <ShieldCheck className="w-3.5 h-3.5" /> Active Link
+                            <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /> Active Link
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {!isRevoked && !isExpired && (
                             <button
-                              onClick={() => handleCopyLink(r.secure_token)}
-                              className="px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700 rounded-lg flex items-center gap-1 transition cursor-pointer"
-                              title="Copy secure patient link"
+                              type="button"
+                              onClick={() => handleCopyLink(r.access_token)}
+                              className="px-2.5 py-1 text-xs font-medium text-primary-400 hover:text-primary-300 bg-primary-500/10 hover:bg-primary-500/20 rounded-lg transition flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-primary-500"
+                              title="Copy secure link"
                             >
-                              {copiedToken === r.secure_token ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                              <span>{copiedToken === r.secure_token ? 'Copied!' : 'Copy Link'}</span>
+                              {copiedToken === r.access_token ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                                  <span className="text-emerald-400">Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                                  <span>Copy Link</span>
+                                </>
+                              )}
                             </button>
                           )}
                           {!isRevoked && (
                             <button
-                              onClick={() => handleRevoke(r.id)}
-                              className="px-2.5 py-1 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+                              type="button"
+                              onClick={() => setRevokingReport(r)}
+                              className="px-2.5 py-1 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition focus-visible:ring-2 focus-visible:ring-rose-500"
                             >
                               Revoke
                             </button>
@@ -286,109 +306,146 @@ export default function Reports() {
         )}
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-700/60">
+          <div className="p-4 border-t border-slate-800">
             <Pagination
-              currentPage={page}
+              page={page}
               totalPages={totalPages}
               onPageChange={(p) => setPage(p)}
             />
           </div>
         )}
-      </div>
+      </section>
 
       {/* Issue Report Modal */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setModalError(''); }}
-        title="Issue Diagnostic Report"
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setModalError('');
+        }}
+        title="Issue Diagnostic Lab Report"
+        description="Generates a high-entropy 32-byte cryptographic token with a 7-day auto-expiry schedule."
       >
         <form onSubmit={handleCreateReport} className="space-y-4">
           {modalError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/50 rounded-xl text-red-200 text-xs">
+            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs">
               {modalError}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Select Patient</label>
+            <label htmlFor="report-patient" className="block text-xs font-medium text-slate-300 mb-1">
+              Select Patient
+            </label>
             <select
+              id="report-patient"
               required
               value={reportForm.patientId}
               onChange={(e) => setReportForm({ ...reportForm, patientId: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
             >
               <option value="">Choose patient...</option>
               {patients.map((p) => (
-                <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.phone})
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Report / Test Name</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Complete Blood Count (CBC) with ESR"
+            <label htmlFor="report-type" className="block text-xs font-medium text-slate-300 mb-1">
+              Diagnostic Test Category
+            </label>
+            <select
+              id="report-type"
               value={reportForm.reportType}
               onChange={(e) => setReportForm({ ...reportForm, reportType: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+              className="form-input"
+            >
+              <option value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</option>
+              <option value="Lipid Profile">Lipid Profile</option>
+              <option value="Liver Function Test (LFT)">Liver Function Test (LFT)</option>
+              <option value="Kidney Function Test (KFT)">Kidney Function Test (KFT)</option>
+              <option value="HbA1c Blood Sugar">HbA1c Blood Sugar</option>
+              <option value="Chest X-Ray Digital">Chest X-Ray Digital</option>
+              <option value="Ultrasound Abdomen">Ultrasound Abdomen</option>
+              <option value="MRI Brain Contrast">MRI Brain Contrast</option>
+            </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Report PDF URL</label>
+            <label htmlFor="report-url" className="block text-xs font-medium text-slate-300 mb-1">
+              PDF Document Storage URL
+            </label>
             <input
+              id="report-url"
               type="url"
               required
               value={reportForm.reportUrl}
               onChange={(e) => setReportForm({ ...reportForm, reportUrl: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
+              placeholder="https://storage.hospital.internal/reports/sample.pdf"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Consulting Notes / Impressions</label>
+            <label htmlFor="report-notes" className="block text-xs font-medium text-slate-300 mb-1">
+              Pathologist / Doctor Notes (Optional)
+            </label>
             <textarea
-              rows="2"
-              placeholder="e.g. Parameters within normal range, follow up in 3 months"
+              id="report-notes"
+              rows={2}
               value={reportForm.doctorNotes}
               onChange={(e) => setReportForm({ ...reportForm, doctorNotes: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="e.g. Mildly elevated WBC; advise clinical correlation..."
+              className="form-input"
             />
           </div>
 
           <div className="flex items-center gap-2 pt-1">
             <input
+              id="report-critical"
               type="checkbox"
-              id="isCritical"
               checked={reportForm.isCritical}
               onChange={(e) => setReportForm({ ...reportForm, isCritical: e.target.checked })}
-              className="rounded bg-slate-900 border-slate-700 text-primary-600 focus:ring-primary-500"
+              className="rounded border-slate-700 bg-slate-900 text-rose-600 focus:ring-rose-500 w-4 h-4"
             />
-            <label htmlFor="isCritical" className="text-xs font-medium text-red-300">
-              Flag as Critical Result (Triggers urgent doctor notification)
+            <label htmlFor="report-critical" className="text-xs font-medium text-rose-300">
+              Flag as Critical Result (Triggers urgent clinical escalation)
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
-            <button
-              type="button"
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <Button
+              variant="outline"
+              size="md"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={submitting}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
+              variant="primary"
+              size="md"
+              loading={submitting}
             >
-              {submitting ? 'Generating 32-byte token...' : 'Generate & Issue'}
-            </button>
+              Issue & Deliver Report
+            </Button>
           </div>
         </form>
       </Modal>
+
+      {/* Revocation Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(revokingReport)}
+        onClose={() => setRevokingReport(null)}
+        onConfirm={handleConfirmRevoke}
+        title="Revoke Diagnostic Link"
+        message={`Are you sure you want to permanently revoke public token access for this ${revokingReport?.report_type} report? The patient will no longer be able to view this file until a new link is issued.`}
+        confirmText="Revoke Access Link"
+        danger={true}
+      />
     </div>
   );
 }

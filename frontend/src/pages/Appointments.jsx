@@ -3,23 +3,20 @@ import React, { useEffect, useState } from 'react';
 import {
   Calendar as CalendarIcon,
   Clock,
-  User,
   Phone,
   Search,
-  Filter,
   Plus,
   RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
   CalendarDays,
-  ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  CheckCircle2,
 } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Pagination from '../components/Pagination';
+import Button from '../components/Button';
+import EmptyState from '../components/EmptyState';
 import { appointmentsAPI, doctorsAPI } from '../services/api';
 
 const getTomorrowDate = () => {
@@ -40,7 +37,6 @@ export default function Appointments() {
   const [doctorFilter, setDoctorFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   // Modals
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
@@ -50,21 +46,21 @@ export default function Appointments() {
   const [actionError, setActionError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  // New Booking Form State
+  // Booking Form State
   const [bookingForm, setBookingForm] = useState({
     patientName: '',
     patientPhone: '',
     doctorId: '',
     slotDate: getTomorrowDate(),
     slotTime: '10:00',
-    notes: ''
+    notes: '',
   });
 
   // Reschedule Form State
   const [rescheduleForm, setRescheduleForm] = useState({
     slotDate: getTomorrowDate(),
     slotTime: '10:00',
-    reason: ''
+    reason: '',
   });
 
   const fetchData = async () => {
@@ -75,18 +71,17 @@ export default function Appointments() {
         limit: '15',
         ...(statusFilter !== 'all' && { status: statusFilter }),
         ...(doctorFilter !== 'all' && { doctor_id: doctorFilter }),
-        ...(searchTerm && { search: searchTerm })
+        ...(searchTerm && { search: searchTerm }),
       };
 
       const [apptsData, docsData] = await Promise.all([
         appointmentsAPI.list(params),
-        doctorsAPI.list()
+        doctorsAPI.list(),
       ]);
 
       setAppointments(apptsData?.data || apptsData || []);
       if (apptsData?.pagination) {
         setTotalPages(apptsData.pagination.totalPages || 1);
-        setTotalCount(apptsData.pagination.total || 0);
       }
 
       setDoctors(docsData?.data || docsData || []);
@@ -108,17 +103,28 @@ export default function Appointments() {
     setActionLoading(true);
 
     try {
-      const fullSlotTime = `${bookingForm.slotDate}T${bookingForm.slotTime}:00`;
+      const dateObj = new Date(`${bookingForm.slotDate}T${bookingForm.slotTime}:00`);
+      const fullSlotTime = isNaN(dateObj.getTime())
+        ? `${bookingForm.slotDate}T${bookingForm.slotTime}:00Z`
+        : dateObj.toISOString();
+
       await appointmentsAPI.create({
-        patientName: bookingForm.patientName,
-        patientPhone: bookingForm.patientPhone,
+        patientName: bookingForm.patientName.trim(),
+        patientPhone: bookingForm.patientPhone.trim(),
         doctorId: parseInt(bookingForm.doctorId, 10),
         slotTime: fullSlotTime,
-        notes: bookingForm.notes
+        notes: bookingForm.notes?.trim() || undefined,
       });
 
       setIsBookModalOpen(false);
-      setBookingForm({ patientName: '', patientPhone: '', doctorId: '', slotDate: getTomorrowDate(), slotTime: '10:00', notes: '' });
+      setBookingForm({
+        patientName: '',
+        patientPhone: '',
+        doctorId: '',
+        slotDate: getTomorrowDate(),
+        slotTime: '10:00',
+        notes: '',
+      });
       fetchData();
     } catch (err) {
       setActionError(err.message || 'Failed to book slot');
@@ -134,10 +140,14 @@ export default function Appointments() {
     setActionLoading(true);
 
     try {
-      const fullSlotTime = `${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00`;
+      const dateObj = new Date(`${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00`);
+      const fullSlotTime = isNaN(dateObj.getTime())
+        ? `${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00Z`
+        : dateObj.toISOString();
+
       await appointmentsAPI.reschedule(selectedAppt.id, {
         newSlotTime: fullSlotTime,
-        reason: rescheduleForm.reason
+        reason: rescheduleForm.reason?.trim() || undefined,
       });
 
       setIsRescheduleModalOpen(false);
@@ -166,7 +176,7 @@ export default function Appointments() {
       const d = new Date(isoString);
       return {
         date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
     } catch {
       return { date: isoString, time: '' };
@@ -176,7 +186,7 @@ export default function Appointments() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Appointment Center</h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -184,41 +194,54 @@ export default function Appointments() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={fetchData}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium border border-slate-700 transition"
-          >
-            <RefreshCw className="w-4 h-4" /> Refresh
-          </button>
-          <button
+          <Button variant="secondary" size="md" onClick={fetchData} icon={RefreshCw}>
+            Refresh
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => setIsBookModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium shadow-md shadow-primary-600/20 transition cursor-pointer"
+            icon={Plus}
           >
-            <Plus className="w-4 h-4" /> Book New Slot
-          </button>
+            Book New Slot
+          </Button>
         </div>
-      </div>
+      </header>
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <section
+        aria-label="Filter appointments"
+        className="card-surface p-4 rounded-2xl flex flex-col md:flex-row gap-4 justify-between items-center"
+      >
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <input
+            id="appt-search"
             type="text"
             placeholder="Search patient name or phone..."
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
+            aria-label="Search appointments by patient name or phone"
+            className="form-input pl-10"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Status:</span>
+            <label htmlFor="filter-status" className="text-xs text-slate-400 font-medium">
+              Status:
+            </label>
             <select
+              id="filter-status"
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="form-input py-1.5 px-3 text-xs w-auto min-h-[38px]"
             >
               <option value="all">All Statuses</option>
               <option value="confirmed">Confirmed</option>
@@ -230,111 +253,127 @@ export default function Appointments() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Doctor:</span>
+            <label htmlFor="filter-doctor" className="text-xs text-slate-400 font-medium">
+              Doctor:
+            </label>
             <select
+              id="filter-doctor"
               value={doctorFilter}
-              onChange={(e) => { setDoctorFilter(e.target.value); setPage(1); }}
-              className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 max-w-xs"
+              onChange={(e) => {
+                setDoctorFilter(e.target.value);
+                setPage(1);
+              }}
+              className="form-input py-1.5 px-3 text-xs w-auto min-h-[38px] max-w-xs"
             >
               <option value="all">All Doctors</option>
               {doctors.map((d) => (
-                <option key={d.id} value={d.id}>{d.name} ({d.specialization})</option>
+                <option key={d.id} value={d.id}>
+                  {d.name} ({d.specialization || d.department || 'Clinical'})
+                </option>
               ))}
             </select>
           </div>
         </div>
-      </div>
+      </section>
 
       {error && (
-        <div className="bg-red-950/60 border border-red-500/50 p-4 rounded-xl text-red-200 text-sm">
+        <div role="alert" className="bg-rose-950/60 border border-rose-500/40 p-4 rounded-xl text-rose-200 text-sm">
           {error}
         </div>
       )}
 
       {/* Appointments List / Table */}
-      <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl shadow-sm overflow-hidden">
+      <section aria-label="Appointments Table" className="card-surface rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-slate-400">
+          <div className="p-12 text-center text-slate-400" role="status">
             <div className="inline-block w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-sm">Retrieving real appointments from database...</p>
           </div>
         ) : appointments.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <CalendarDays className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-slate-200">No appointments found</h3>
-            <p className="text-xs text-slate-400 mt-1">Try adjusting your filters or book a new appointment.</p>
-          </div>
+          <EmptyState
+            icon={CalendarDays}
+            title="No appointments found"
+            message="No appointments match your active search filters. Try clearing filters or schedule a new appointment."
+            actionLabel="Book New Slot"
+            onAction={() => setIsBookModalOpen(true)}
+            actionIcon={Plus}
+          />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-slate-700/80 bg-slate-900/40 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Patient</th>
-                  <th className="py-3.5 px-4">Doctor & Department</th>
-                  <th className="py-3.5 px-4">Slot Time</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Voice Confirmed</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  <th scope="col" className="py-3.5 px-5">Patient</th>
+                  <th scope="col" className="py-3.5 px-5">Doctor & Specialty</th>
+                  <th scope="col" className="py-3.5 px-5">Slot Time</th>
+                  <th scope="col" className="py-3.5 px-5">Status</th>
+                  <th scope="col" className="py-3.5 px-5">Voice Verification</th>
+                  <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/60 text-sm">
+              <tbody className="divide-y divide-slate-800/70 text-sm">
                 {appointments.map((appt) => {
                   const { date, time } = formatSlotTime(appt.slot_time);
                   const patientName = appt.patient?.name || 'Patient';
                   const patientPhone = appt.patient?.phone || 'N/A';
                   const doctorName = appt.doctor?.name || `Doctor #${appt.doctor_id}`;
-                  const department = appt.doctor?.specialization || 'Clinical';
+                  const department = appt.doctor?.specialization || appt.doctor?.department || 'Clinical';
 
                   return (
-                    <tr key={appt.id} className="hover:bg-slate-700/30 transition">
-                      <td className="py-3.5 px-4">
+                    <tr key={appt.id} className="hover:bg-slate-800/40 transition">
+                      <td className="py-3.5 px-5">
                         <div className="font-medium text-white">{patientName}</div>
                         <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3 h-3" /> {patientPhone}
+                          <Phone className="w-3 h-3 text-slate-500" aria-hidden="true" />
+                          <span>{patientPhone}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <div className="font-medium text-slate-200">{doctorName}</div>
                         <div className="text-xs text-primary-400">{department}</div>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <div className="font-medium text-white flex items-center gap-1.5">
-                          <CalendarIcon className="w-3.5 h-3.5 text-slate-400" /> {date}
+                          <CalendarIcon className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                          <span>{date}</span>
                         </div>
                         <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" /> {time}
+                          <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                          <span>{time}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <StatusBadge status={appt.status} />
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         {appt.confirmed_via_call ? (
                           <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Confirmed
+                            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Confirmed
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-                            <Clock className="w-3.5 h-3.5 text-amber-400" /> Pending Call
+                            <Clock className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Pending Call
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {appt.status !== 'cancelled' && (
                             <>
                               <button
+                                type="button"
                                 onClick={() => {
                                   setSelectedAppt(appt);
                                   setIsRescheduleModalOpen(true);
                                 }}
-                                className="px-2.5 py-1 text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition"
+                                className="px-3 py-1.5 text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition focus-visible:ring-2 focus-visible:ring-amber-500"
                               >
                                 Reschedule
                               </button>
                               <button
+                                type="button"
                                 onClick={() => setCancelDialogAppt(appt)}
-                                className="px-2.5 py-1 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition"
+                                className="px-3 py-1.5 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition focus-visible:ring-2 focus-visible:ring-rose-500"
                               >
                                 Cancel
                               </button>
@@ -352,61 +391,74 @@ export default function Appointments() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-700/60">
+          <div className="p-4 border-t border-slate-800">
             <Pagination
-              currentPage={page}
+              page={page}
               totalPages={totalPages}
               onPageChange={(p) => setPage(p)}
             />
           </div>
         )}
-      </div>
+      </section>
 
       {/* Book New Appointment Modal */}
       <Modal
-        isOpen={isBookModalOpen}
-        onClose={() => { setIsBookModalOpen(false); setActionError(''); }}
+        open={isBookModalOpen}
+        onClose={() => {
+          setIsBookModalOpen(false);
+          setActionError('');
+        }}
         title="Book New Appointment"
+        description="Select a doctor and available consultation slot. Phone numbers will be registered for automated voice confirmations."
       >
         <form onSubmit={handleBookSubmit} className="space-y-4">
           {actionError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/50 rounded-xl text-red-200 text-xs flex items-start gap-2">
-              <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs flex items-start gap-2">
+              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
               <span>{actionError}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Patient Full Name</label>
+            <label htmlFor="book-patient-name" className="block text-xs font-medium text-slate-300 mb-1">
+              Patient Full Name
+            </label>
             <input
+              id="book-patient-name"
               type="text"
               required
               placeholder="e.g. Ramesh Kumar"
               value={bookingForm.patientName}
               onChange={(e) => setBookingForm({ ...bookingForm, patientName: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">WhatsApp Phone Number</label>
+            <label htmlFor="book-patient-phone" className="block text-xs font-medium text-slate-300 mb-1">
+              WhatsApp / Mobile Phone (E.164)
+            </label>
             <input
+              id="book-patient-phone"
               type="text"
               required
               placeholder="+919876543210"
               value={bookingForm.patientPhone}
               onChange={(e) => setBookingForm({ ...bookingForm, patientPhone: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Select Doctor</label>
+            <label htmlFor="book-doctor" className="block text-xs font-medium text-slate-300 mb-1">
+              Select Doctor
+            </label>
             <select
+              id="book-doctor"
               required
               value={bookingForm.doctorId}
               onChange={(e) => setBookingForm({ ...bookingForm, doctorId: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
             >
               <option value="">Choose a doctor...</option>
               {doctors.map((d) => (
@@ -417,24 +469,30 @@ export default function Appointments() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Date</label>
+              <label htmlFor="book-date" className="block text-xs font-medium text-slate-300 mb-1">
+                Date
+              </label>
               <input
+                id="book-date"
                 type="date"
                 required
                 min={new Date().toISOString().split('T')[0]}
                 value={bookingForm.slotDate}
                 onChange={(e) => setBookingForm({ ...bookingForm, slotDate: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="form-input"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Time (30m Slots)</label>
+              <label htmlFor="book-time" className="block text-xs font-medium text-slate-300 mb-1">
+                Time (30m Slots)
+              </label>
               <select
+                id="book-time"
                 value={bookingForm.slotTime}
                 onChange={(e) => setBookingForm({ ...bookingForm, slotTime: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="form-input"
               >
                 {['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'].map((time) => (
                   <option key={time} value={time}>{time}</option>
@@ -444,72 +502,87 @@ export default function Appointments() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Consultation Reason / Notes</label>
+            <label htmlFor="book-notes" className="block text-xs font-medium text-slate-300 mb-1">
+              Consultation Reason / Notes (Optional)
+            </label>
             <textarea
-              rows="2"
+              id="book-notes"
+              rows={2}
               placeholder="e.g. Regular blood pressure checkup..."
               value={bookingForm.notes}
               onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
-            <button
-              type="button"
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <Button
+              variant="outline"
+              size="md"
               onClick={() => setIsBookModalOpen(false)}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={actionLoading}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
+              variant="primary"
+              size="md"
+              loading={actionLoading}
             >
-              {actionLoading ? 'Validating slot...' : 'Confirm Booking'}
-            </button>
+              Confirm Booking
+            </Button>
           </div>
         </form>
       </Modal>
 
       {/* Reschedule Modal */}
       <Modal
-        isOpen={isRescheduleModalOpen}
-        onClose={() => { setIsRescheduleModalOpen(false); setSelectedAppt(null); setActionError(''); }}
+        open={isRescheduleModalOpen}
+        onClose={() => {
+          setIsRescheduleModalOpen(false);
+          setSelectedAppt(null);
+          setActionError('');
+        }}
         title={`Reschedule Appointment #${selectedAppt?.id || ''}`}
+        description="Select a new date and consultation slot for this patient."
       >
         <form onSubmit={handleRescheduleSubmit} className="space-y-4">
           {actionError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/50 rounded-xl text-red-200 text-xs flex items-start gap-2">
-              <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs flex items-start gap-2">
+              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
               <span>{actionError}</span>
             </div>
           )}
 
-          <div className="text-xs text-slate-400 p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
-            Current: <strong>{selectedAppt?.patient?.name}</strong> with <strong>{selectedAppt?.doctor?.name}</strong> at{' '}
-            {selectedAppt && formatSlotTime(selectedAppt.slot_time).date} {selectedAppt && formatSlotTime(selectedAppt.slot_time).time}
+          <div className="text-xs text-slate-300 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+            Current Booking: <strong className="text-white">{selectedAppt?.patient?.name}</strong> with <strong className="text-white">{selectedAppt?.doctor?.name}</strong> on{' '}
+            {selectedAppt && formatSlotTime(selectedAppt.slot_time).date} at {selectedAppt && formatSlotTime(selectedAppt.slot_time).time}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">New Date</label>
+              <label htmlFor="resched-date" className="block text-xs font-medium text-slate-300 mb-1">
+                New Date
+              </label>
               <input
+                id="resched-date"
                 type="date"
                 required
                 min={new Date().toISOString().split('T')[0]}
                 value={rescheduleForm.slotDate}
                 onChange={(e) => setRescheduleForm({ ...rescheduleForm, slotDate: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="form-input"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">New Slot Time</label>
+              <label htmlFor="resched-time" className="block text-xs font-medium text-slate-300 mb-1">
+                New Slot Time
+              </label>
               <select
+                id="resched-time"
                 value={rescheduleForm.slotTime}
                 onChange={(e) => setRescheduleForm({ ...rescheduleForm, slotTime: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="form-input"
               >
                 {['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'].map((time) => (
                   <option key={time} value={time}>{time}</option>
@@ -519,44 +592,48 @@ export default function Appointments() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Reason for Reschedule</label>
+            <label htmlFor="resched-reason" className="block text-xs font-medium text-slate-300 mb-1">
+              Reason for Reschedule
+            </label>
             <input
+              id="resched-reason"
               type="text"
               placeholder="e.g. Patient requested morning slot via WhatsApp"
               value={rescheduleForm.reason}
               onChange={(e) => setRescheduleForm({ ...rescheduleForm, reason: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="form-input"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
-            <button
-              type="button"
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <Button
+              variant="outline"
+              size="md"
               onClick={() => setIsRescheduleModalOpen(false)}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition"
             >
               Close
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={actionLoading}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
+              variant="primary"
+              size="md"
+              loading={actionLoading}
             >
-              {actionLoading ? 'Updating slot...' : 'Confirm Reschedule'}
-            </button>
+              Confirm Reschedule
+            </Button>
           </div>
         </form>
       </Modal>
 
       {/* Cancel Confirmation Dialog */}
       <ConfirmDialog
-        isOpen={Boolean(cancelDialogAppt)}
+        open={Boolean(cancelDialogAppt)}
         onClose={() => setCancelDialogAppt(null)}
         onConfirm={handleCancelConfirm}
         title="Cancel Appointment"
-        message={`Are you sure you want to cancel the appointment for ${cancelDialogAppt?.patient?.name} on ${cancelDialogAppt && formatSlotTime(cancelDialogAppt.slot_time).date}? This will free up the doctor's slot.`}
+        message={`Are you sure you want to cancel the appointment for ${cancelDialogAppt?.patient?.name} on ${cancelDialogAppt && formatSlotTime(cancelDialogAppt.slot_time).date}? This will release the doctor's slot.`}
         confirmText="Yes, Cancel Slot"
-        type="danger"
+        danger={true}
       />
     </div>
   );

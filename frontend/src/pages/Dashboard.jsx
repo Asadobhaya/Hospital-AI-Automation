@@ -13,7 +13,7 @@ import {
   Activity,
   ArrowUpRight,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -25,15 +25,17 @@ import {
   Legend,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
 import { dashboardAPI } from '../services/api';
+import Button from '../components/Button';
+import { CardSkeleton } from '../components/Skeletons';
 
 const CALL_COLORS = {
-  confirmed: '#10B981', // Emerald
-  reschedule_requested: '#F59E0B', // Amber
-  cancelled: '#EF4444', // Red
-  failedOrNoAnswer: '#6B7280' // Gray
+  confirmed: '#10b981', // Emerald
+  reschedule_requested: '#f59e0b', // Amber
+  cancelled: '#f43f5e', // Rose
+  failedOrNoAnswer: '#64748b', // Slate
 };
 
 export default function Dashboard() {
@@ -57,7 +59,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 30000); // Poll every 30s
+    const interval = setInterval(fetchDashboardData, 30000); // 30s telemetry polling
     return () => clearInterval(interval);
   }, []);
 
@@ -68,16 +70,16 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-slate-800 rounded w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="space-y-6" role="status" aria-label="Loading dashboard metrics">
+        <div className="h-8 bg-slate-800 rounded-lg w-64 animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-slate-800 rounded-xl" />
+            <CardSkeleton key={i} />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-80 bg-slate-800 rounded-xl" />
-          <div className="h-80 bg-slate-800 rounded-xl" />
+          <div className="lg:col-span-2 h-80 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+          <div className="h-80 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -90,142 +92,169 @@ export default function Dashboard() {
     missed: 0,
     completed: 0,
     cancelled: 0,
-    unresolvedEscalations: 0
+    unresolvedEscalations: 0,
   };
 
   const trendData = data?.trend || [];
-  const callStats = data?.callStats || { confirmed: 0, rescheduleRequested: 0, cancelled: 0, failedOrNoAnswer: 0 };
-  
+  const callStats = data?.callStats || {
+    confirmed: 0,
+    rescheduleRequested: 0,
+    cancelled: 0,
+    failedOrNoAnswer: 0,
+  };
+
   const pieData = [
     { name: 'Confirmed', value: callStats.confirmed || 0, color: CALL_COLORS.confirmed },
     { name: 'Reschedule Req', value: callStats.rescheduleRequested || 0, color: CALL_COLORS.reschedule_requested },
     { name: 'Cancelled', value: callStats.cancelled || 0, color: CALL_COLORS.cancelled },
-    { name: 'No Answer/Fail', value: callStats.failedOrNoAnswer || 0, color: CALL_COLORS.failedOrNoAnswer },
-  ].filter(d => d.value > 0);
+    { name: 'No Answer / Fail', value: callStats.failedOrNoAnswer || 0, color: CALL_COLORS.failedOrNoAnswer },
+  ].filter((d) => d.value > 0);
 
   const integrationHealth = data?.integrationHealth || {};
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Page Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Clinical & AI Operations Hub</h1>
-          <p className="text-sm text-slate-400 mt-1">Real-time telemetry, automated patient journeys & voice scheduling</p>
+          <p className="text-sm text-slate-400 mt-1">
+            Real-time telemetry, automated patient journeys & voice scheduling
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="secondary"
+            size="md"
             onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium border border-slate-700 transition"
+            loading={refreshing}
+            icon={RefreshCw}
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
-          </button>
+          </Button>
           <Link
             to="/appointments"
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium shadow-md shadow-primary-600/20 transition"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-500 shadow-sm border border-primary-500/30 transition min-h-[44px] focus-visible:ring-2 focus-visible:ring-primary-400"
           >
-            <Calendar className="w-4 h-4" />
-            Book Appointment
+            <Calendar className="w-4 h-4" aria-hidden="true" />
+            <span>Book Appointment</span>
           </Link>
         </div>
-      </div>
+      </header>
 
       {error && (
-        <div className="bg-red-950/60 border border-red-500/50 p-4 rounded-xl text-red-200 text-sm flex items-center justify-between">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="bg-rose-950/60 border border-rose-500/40 p-4 rounded-xl text-rose-200 text-sm flex items-center justify-between"
+        >
           <span>Failed to load latest metrics: {error}</span>
-          <button onClick={fetchDashboardData} className="underline text-red-300 font-medium">Retry</button>
+          <button
+            type="button"
+            onClick={fetchDashboardData}
+            className="underline text-rose-300 font-semibold hover:text-white"
+          >
+            Retry
+          </button>
         </div>
       )}
 
       {/* Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section aria-label="Key Performance Indicators" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Today's Appointments */}
-        <div className="bg-slate-800/80 border border-slate-700/70 p-5 rounded-2xl shadow-sm hover:border-slate-600 transition">
+        <article className="card-surface p-5 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Today's Total</span>
-            <div className="p-2.5 bg-primary-500/10 text-primary-400 rounded-xl">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Today's Appointments</h2>
+            <div className="p-2.5 bg-primary-500/10 text-primary-400 rounded-xl" aria-hidden="true">
               <Calendar className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white">{summary.todayTotal}</span>
+            <span className="text-3xl font-bold text-white tracking-tight">{summary.todayTotal}</span>
             <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
-              <TrendingUp className="w-3.5 h-3.5" /> Active
+              <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" /> Active Day
             </span>
           </div>
           <div className="mt-2 text-xs text-slate-400 flex items-center gap-2">
             <span>{summary.completed} completed</span>
-            <span>•</span>
-            <span className="text-amber-400">{summary.upcoming} remaining</span>
+            <span aria-hidden="true">•</span>
+            <span className="text-amber-400 font-medium">{summary.upcoming} remaining</span>
           </div>
-        </div>
+        </article>
 
-        {/* Pending / Confirmations */}
-        <div className="bg-slate-800/80 border border-slate-700/70 p-5 rounded-2xl shadow-sm hover:border-slate-600 transition">
+        {/* Pending Actions */}
+        <article className="card-surface p-5 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Actions</span>
-            <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Actions</h2>
+            <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl" aria-hidden="true">
               <Clock className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white">{summary.pendingConfirmations}</span>
+            <span className="text-3xl font-bold text-white tracking-tight">{summary.pendingConfirmations}</span>
             <span className="text-xs text-amber-400 font-medium">Calls Queued</span>
           </div>
           <div className="mt-2 text-xs text-slate-400">
-            Awaiting 24h/2h automated voice verification
+            Awaiting 24h & 2h voice verification
           </div>
-        </div>
+        </article>
 
         {/* Missed Appointments */}
-        <div className="bg-slate-800/80 border border-slate-700/70 p-5 rounded-2xl shadow-sm hover:border-slate-600 transition">
+        <article className="card-surface p-5 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Missed / No-Shows</span>
-            <div className="p-2.5 bg-red-500/10 text-red-400 rounded-xl">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Missed / No-Shows</h2>
+            <div className="p-2.5 bg-rose-500/10 text-rose-400 rounded-xl" aria-hidden="true">
               <XCircle className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white">{summary.missed}</span>
-            <span className="text-xs text-red-400 font-medium">Re-engagement</span>
+            <span className="text-3xl font-bold text-white tracking-tight">{summary.missed}</span>
+            <span className="text-xs text-rose-400 font-medium">Re-engagement</span>
           </div>
           <div className="mt-2 text-xs text-slate-400">
             WhatsApp follow-up dispatched
           </div>
-        </div>
+        </article>
 
-        {/* Emergency Escalations */}
-        <div className="bg-slate-800/80 border border-slate-700/70 p-5 rounded-2xl shadow-sm hover:border-slate-600 transition">
+        {/* Escalations */}
+        <article className="card-surface p-5 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Staff Escalations</span>
-            <div className={`p-2.5 rounded-xl ${summary.unresolvedEscalations > 0 ? 'bg-red-500/20 text-red-400 animate-pulse' : 'bg-emerald-500/10 text-emerald-400'}`}>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Staff Escalations</h2>
+            <div
+              className={`p-2.5 rounded-xl ${
+                summary.unresolvedEscalations > 0 ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
+              }`}
+              aria-hidden="true"
+            >
               <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white">{summary.unresolvedEscalations}</span>
-            <span className={`text-xs font-medium ${summary.unresolvedEscalations > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-              {summary.unresolvedEscalations > 0 ? 'Needs Attention' : 'All Clear'}
+            <span className="text-3xl font-bold text-white tracking-tight">{summary.unresolvedEscalations}</span>
+            <span
+              className={`text-xs font-medium ${
+                summary.unresolvedEscalations > 0 ? 'text-rose-400' : 'text-emerald-400'
+              }`}
+            >
+              {summary.unresolvedEscalations > 0 ? 'Action Required' : 'All Clear'}
             </span>
           </div>
           <div className="mt-2 text-xs text-slate-400">
             Unhappy feedback & emergency triage
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
 
       {/* Main Charts & Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section aria-label="Visual Telemetry Charts" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 7-Day Appointment Volume Trend */}
-        <div className="lg:col-span-2 bg-slate-800/80 border border-slate-700/70 p-6 rounded-2xl shadow-sm">
+        <article className="lg:col-span-2 card-surface p-6 rounded-2xl">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-semibold text-white">7-Day Appointment Volume</h2>
+              <h2 className="text-base font-semibold text-white tracking-tight">7-Day Appointment Volume</h2>
               <p className="text-xs text-slate-400">Confirmed, completed, and cancelled trends</p>
             </div>
-            <span className="text-xs text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded-full border border-slate-600/50">
+            <span className="text-xs text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
               Live Database
             </span>
           </div>
@@ -235,23 +264,29 @@ export default function Dashboard() {
                 <XAxis dataKey="date" stroke="#64748B" fontSize={11} tickLine={false} />
                 <YAxis stroke="#64748B" fontSize={11} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff', fontSize: '12px' }}
+                  contentStyle={{
+                    backgroundColor: '#0F172A',
+                    borderColor: '#334155',
+                    borderRadius: '0.75rem',
+                    color: '#fff',
+                    fontSize: '12px',
+                  }}
                 />
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                <Bar dataKey="confirmed" name="Confirmed" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="confirmed" name="Confirmed" fill="#0D9488" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="completed" name="Completed" fill="#10B981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="cancelled" name="Cancelled" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="cancelled" name="Cancelled" fill="#F43F5E" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </article>
 
         {/* AI Voice Call Outcomes Pie */}
-        <div className="bg-slate-800/80 border border-slate-700/70 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <article className="card-surface p-6 rounded-2xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold text-white">AI Voice Call Outcomes</h2>
-              <PhoneCall className="w-4 h-4 text-primary-400" />
+              <h2 className="text-base font-semibold text-white tracking-tight">AI Voice Call Outcomes</h2>
+              <PhoneCall className="w-4 h-4 text-primary-400" aria-hidden="true" />
             </div>
             <p className="text-xs text-slate-400 mb-4">Automated 24h & 2h reminder responses</p>
 
@@ -274,7 +309,13 @@ export default function Dashboard() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff', fontSize: '12px' }}
+                      contentStyle={{
+                        backgroundColor: '#0F172A',
+                        borderColor: '#334155',
+                        borderRadius: '0.75rem',
+                        color: '#fff',
+                        fontSize: '12px',
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -286,93 +327,100 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-700/60 text-xs">
+          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800 text-xs">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" aria-hidden="true" />
               <span className="text-slate-300">Confirmed: {callStats.confirmed || 0}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" aria-hidden="true" />
               <span className="text-slate-300">Reschedule: {callStats.rescheduleRequested || 0}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-500" aria-hidden="true" />
               <span className="text-slate-300">Cancelled: {callStats.cancelled || 0}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-slate-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-slate-500" aria-hidden="true" />
               <span className="text-slate-300">No Answer: {callStats.failedOrNoAnswer || 0}</span>
             </div>
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
 
       {/* Integration Health & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section aria-label="System Subsystems & Quick Navigation" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* System Subsystems Status */}
-        <div className="bg-slate-800/80 border border-slate-700/70 p-5 rounded-2xl shadow-sm">
-          <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-emerald-400" /> System Integration Status
+        <article className="card-surface p-5 rounded-2xl">
+          <h2 className="text-xs font-semibold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+            System Integration Status
           </h2>
-          <div className="space-y-3 text-xs">
+          <div className="space-y-2.5 text-xs">
             {Object.entries(integrationHealth).map(([key, val]) => (
-              <div key={key} className="flex items-center justify-between p-2.5 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <div
+                key={key}
+                className="flex items-center justify-between p-3 bg-slate-950/60 rounded-xl border border-slate-800"
+              >
                 <span className="capitalize font-medium text-slate-300">{key}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-slate-400 text-[11px]">{val.provider}</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20" aria-hidden="true" />
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </article>
 
         {/* Quick Launchpad */}
-        <div className="lg:col-span-2 bg-slate-800/80 border border-slate-700/70 p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+        <article className="lg:col-span-2 card-surface p-5 rounded-2xl flex flex-col justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">
               Automated Workflows & Hub Quick Actions
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Link
                 to="/appointments"
-                className="p-3 bg-slate-900/60 hover:bg-slate-700/50 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center text-center gap-2 transition group"
+                className="p-3.5 bg-slate-950/60 hover:bg-slate-800/80 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center gap-2 transition group min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <Calendar className="w-5 h-5 text-primary-400 group-hover:scale-110 transition" />
+                <Calendar className="w-5 h-5 text-primary-400 group-hover:scale-110 transition" aria-hidden="true" />
                 <span className="text-xs font-medium text-slate-300">Book Slot</span>
               </Link>
               <Link
                 to="/messages"
-                className="p-3 bg-slate-900/60 hover:bg-slate-700/50 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center text-center gap-2 transition group"
+                className="p-3.5 bg-slate-950/60 hover:bg-slate-800/80 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center gap-2 transition group min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <MessageSquare className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition" />
+                <MessageSquare className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition" aria-hidden="true" />
                 <span className="text-xs font-medium text-slate-300">WhatsApp Chat</span>
               </Link>
               <Link
                 to="/reports"
-                className="p-3 bg-slate-900/60 hover:bg-slate-700/50 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center text-center gap-2 transition group"
+                className="p-3.5 bg-slate-950/60 hover:bg-slate-800/80 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center gap-2 transition group min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <FileText className="w-5 h-5 text-purple-400 group-hover:scale-110 transition" />
-                <span className="text-xs font-medium text-slate-300">Issue Report</span>
+                <FileText className="w-5 h-5 text-purple-400 group-hover:scale-110 transition" aria-hidden="true" />
+                <span className="text-xs font-medium text-slate-300">Lab Reports</span>
               </Link>
               <Link
                 to="/calls"
-                className="p-3 bg-slate-900/60 hover:bg-slate-700/50 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center text-center gap-2 transition group"
+                className="p-3.5 bg-slate-950/60 hover:bg-slate-800/80 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center gap-2 transition group min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <PhoneCall className="w-5 h-5 text-amber-400 group-hover:scale-110 transition" />
+                <PhoneCall className="w-5 h-5 text-amber-400 group-hover:scale-110 transition" aria-hidden="true" />
                 <span className="text-xs font-medium text-slate-300">Voice Calls</span>
               </Link>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-400">
-            <span>Automated n8n Engine: <strong>Active (98 Production Nodes)</strong></span>
-            <Link to="/settings" className="text-primary-400 hover:text-primary-300 flex items-center gap-1">
-              Configure Webhooks <ArrowUpRight className="w-3.5 h-3.5" />
+          <div className="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-400">
+            <span>Automated n8n Engine: <strong className="text-slate-200">Active (98 Production Nodes)</strong></span>
+            <Link
+              to="/settings"
+              className="text-primary-400 hover:text-primary-300 flex items-center gap-1 font-medium"
+            >
+              Configure Webhooks <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
             </Link>
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
     </div>
   );
 }
