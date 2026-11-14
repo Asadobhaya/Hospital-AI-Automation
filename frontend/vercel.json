@@ -36,7 +36,15 @@
       "destination": "https://hospital-ai-backend-t9gr.onrender.com/api/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/((?!api|robots\\.txt|sitemap\\.xml).*)",
       "destination": "/index.html"
     }
   ]
