@@ -44,13 +44,11 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch('/api/dashboard/stats', { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to load dashboard metrics');
-      const json = await res.json();
-      setData(json.data || json);
+      const res = await dashboardAPI.getStats();
+      setData(res?.data || res);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || 'Failed to load dashboard metrics');
     } finally {
       setLoading(false);
       setRefreshing(false);

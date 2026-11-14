@@ -7,10 +7,12 @@ const API_BASE = rawBase;
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('hospital_token') : null;
   const config = {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     ...options,
@@ -53,16 +55,25 @@ async function request(endpoint, options = {}) {
 
 // Auth
 export const authAPI = {
-  login: (email, password) =>
-    request('/auth/login', { method: 'POST', body: { email, password } }),
-  logout: () =>
-    request('/auth/logout', { method: 'POST' }),
+  login: async (email, password) => {
+    const data = await request('/auth/login', { method: 'POST', body: { email, password } });
+    const token = data?.data?.token || data?.data?.accessToken || data?.token || data?.accessToken;
+    if (token) {
+      localStorage.setItem('hospital_token', token);
+    }
+    return data;
+  },
+  logout: async () => {
+    localStorage.removeItem('hospital_token');
+    return request('/auth/logout', { method: 'POST' });
+  },
   me: () =>
     request('/auth/me'),
 };
 
 // Dashboard
 export const dashboardAPI = {
+  getStats: () => request('/dashboard/stats'),
   getSummary: () => request('/dashboard/summary'),
   getAppointmentTrend: () => request('/dashboard/appointment-trend'),
   getRecentErrors: () => request('/dashboard/recent-errors'),
