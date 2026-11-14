@@ -4,7 +4,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/dbAdapter');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, enforceOwnership } = require('../middleware/auth');
+const { validateBody, schemas } = require('../middleware/validation');
 const appointmentService = require('../services/appointmentService');
 const response = require('../utils/response');
 
@@ -56,12 +57,11 @@ router.get('/', requireAuth, async (req, res, next) => {
 });
 
 /**
- * GET /api/appointments/:id
+ * GET /api/appointments/:id — Secure detail view with IDOR ownership check
  */
-router.get('/:id', requireAuth, async (req, res, next) => {
+router.get('/:id', requireAuth, enforceOwnership('appointments'), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    const { data: appointment } = await db.from('appointments').select('*').eq('id', id).single();
+    const appointment = req.resource || await db.from('appointments').select('*').eq('id', parseInt(req.params.id, 10)).single().then(r => r.data);
     if (!appointment) {
       return response.error(res, 'Appointment not found.', 404);
     }
@@ -72,14 +72,11 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 });
 
 /**
- * POST /api/appointments — Book an appointment
+ * POST /api/appointments — Book an appointment with strict schema validation
  */
-router.post('/', requireAuth, async (req, res, next) => {
+router.post('/', requireAuth, validateBody(schemas.bookAppointment), async (req, res, next) => {
   try {
     const { patientPhone, patientName, doctorId, slotTime, source, notes } = req.body;
-    if (!patientPhone || !doctorId || !slotTime) {
-      return response.error(res, 'patientPhone, doctorId, and slotTime are required.', 400);
-    }
 
     const result = await appointmentService.bookAppointment({
       patientPhone,
@@ -99,16 +96,13 @@ router.post('/', requireAuth, async (req, res, next) => {
 });
 
 /**
- * POST / PATCH /api/appointments/:id/reschedule — Reschedule slot
+ * POST / PATCH /api/appointments/:id/reschedule — Reschedule slot with IDOR check
  */
-router.all('/:id/reschedule', requireAuth, async (req, res, next) => {
+router.all('/:id/reschedule', requireAuth, enforceOwnership('appointments'), validateBody(schemas.rescheduleAppointment), async (req, res, next) => {
   if (req.method !== 'POST' && req.method !== 'PATCH') return next();
   try {
     const id = parseInt(req.params.id, 10);
     const { newSlotTime } = req.body;
-    if (!newSlotTime) {
-      return response.error(res, 'newSlotTime is required.', 400);
-    }
 
     const updated = await appointmentService.rescheduleAppointment(id, newSlotTime, {
       userId: req.user.id,
@@ -122,9 +116,9 @@ router.all('/:id/reschedule', requireAuth, async (req, res, next) => {
 });
 
 /**
- * POST / PATCH /api/appointments/:id/cancel — Cancel appointment
+ * POST / PATCH /api/appointments/:id/cancel — Cancel appointment with IDOR check
  */
-router.all('/:id/cancel', requireAuth, async (req, res, next) => {
+router.all('/:id/cancel', requireAuth, enforceOwnership('appointments'), async (req, res, next) => {
   if (req.method !== 'POST' && req.method !== 'PATCH') return next();
   try {
     const id = parseInt(req.params.id, 10);

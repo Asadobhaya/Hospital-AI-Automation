@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/dbAdapter');
 const { requireAuth } = require('../middleware/auth');
+const { aiLimiter } = require('../middleware/rateLimiter');
 const response = require('../utils/response');
 const { screenIncomingMessage, screenMessage } = require('../services/aiSafetyService');
 const { logAction } = require('../services/auditService');
@@ -161,9 +162,9 @@ router.post(['/staff-reply', '/send'], requireAuth, async (req, res, next) => {
 });
 
 /**
- * POST /api/messages/ai-screen and /api/messages/test-ai — Test AI prompt & clinical guardrail screening
+ * POST /api/messages/ai-screen and /api/messages/test-ai — Test AI prompt & clinical guardrail screening (Rate limited)
  */
-router.post(['/ai-screen', '/test-ai'], requireAuth, async (req, res, next) => {
+router.post(['/ai-screen', '/test-ai'], requireAuth, aiLimiter, async (req, res, next) => {
   try {
     const { text, patientPhone } = req.body;
     if (!text) return response.error(res, 'text is required.', 400);

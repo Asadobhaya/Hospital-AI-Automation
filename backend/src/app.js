@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const config = require('./config');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const { sanitizeRequest } = require('./middleware/validation');
 const errorHandler = require('./middleware/errorHandler');
 
 // Route imports
@@ -28,11 +29,40 @@ const settingsRoutes = require('./routes/settings');
 
 const app = express();
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
-// Security HTTP headers
+// Enforce HTTPS in production environments
+app.use((req, res, next) => {
+  if (config.env === 'production' && req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
+// Comprehensive Security HTTP Headers (HSTS, CSP, Anti-Clickjacking, NoSniff)
 app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:", "wss:"],
+      fontSrc: ["'self'", "https:", "data:"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+    },
+  },
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
 // CORS configuration
@@ -56,10 +86,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-webhook-signature']
 }));
 
-// Request parsers
+// Global Request parsers & Input Sanitization
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+app.use(sanitizeRequest);
 
 // Request logger
 if (config.env !== 'test') {

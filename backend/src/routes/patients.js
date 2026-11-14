@@ -4,13 +4,14 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/dbAdapter');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, enforceOwnership } = require('../middleware/auth');
+const { scrapingProtectionLimiter } = require('../middleware/rateLimiter');
 const response = require('../utils/response');
 
 /**
- * GET /api/patients — Searchable patient list with pagination
+ * GET /api/patients — Searchable patient list with anti-scraping rate limiter
  */
-router.get('/', requireAuth, async (req, res, next) => {
+router.get('/', requireAuth, scrapingProtectionLimiter, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 15));
@@ -36,9 +37,9 @@ router.get('/', requireAuth, async (req, res, next) => {
 });
 
 /**
- * GET /api/patients/:id — Patient detail with appointments and reports history
+ * GET /api/patients/:id — Patient detail with IDOR ownership check
  */
-router.get('/:id', requireAuth, async (req, res, next) => {
+router.get('/:id', requireAuth, enforceOwnership('patients', 'id', 'id'), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { data: patient } = await db.from('patients').select('*').eq('id', id).single();

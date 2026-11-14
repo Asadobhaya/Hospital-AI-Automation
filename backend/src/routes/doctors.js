@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/dbAdapter');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { validateBody, schemas } = require('../middleware/validation');
 const response = require('../utils/response');
 
 /**
@@ -41,9 +42,9 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 });
 
 /**
- * POST /api/doctors — Create doctor (Admin only)
+ * POST /api/doctors — Create doctor (Admin only, strictly validated)
  */
-router.post('/', requireAuth, requireRole('admin'), async (req, res, next) => {
+router.post('/', requireAuth, requireRole('admin'), validateBody(schemas.createDoctor), async (req, res, next) => {
   try {
     let { name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes } = req.body;
     if (!name) {

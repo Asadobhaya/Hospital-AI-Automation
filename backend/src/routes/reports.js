@@ -4,14 +4,16 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/dbAdapter');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, enforceOwnership } = require('../middleware/auth');
+const { validateBody, schemas } = require('../middleware/validation');
+const { scrapingProtectionLimiter } = require('../middleware/rateLimiter');
 const reportService = require('../services/reportService');
 const response = require('../utils/response');
 
 /**
- * GET /api/reports — Staff view of reports list
+ * GET /api/reports — Staff view of reports list with anti-scraping limiter
  */
-router.get('/', requireAuth, async (req, res, next) => {
+router.get('/', requireAuth, scrapingProtectionLimiter, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 15));
@@ -40,14 +42,11 @@ router.get('/', requireAuth, async (req, res, next) => {
 });
 
 /**
- * POST /api/reports — Generate secure report link & notify
+ * POST /api/reports — Generate secure report link & notify (Admin and Doctor only)
  */
-router.post('/', requireAuth, async (req, res, next) => {
+router.post('/', requireAuth, requireRole('admin', 'doctor'), validateBody(schemas.createReport), async (req, res, next) => {
   try {
     const { patientId, reportType, reportUrl, doctorNotes, isCritical } = req.body;
-    if (!patientId || !reportType || !reportUrl) {
-      return response.error(res, 'patientId, reportType, and reportUrl are required.', 400);
-    }
 
     const result = await reportService.createReport({
       patientId: parseInt(patientId, 10),

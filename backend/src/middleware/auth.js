@@ -1,13 +1,15 @@
-// src/middleware/auth.js — Authentication and Role Authorization
+// src/middleware/auth.js — Authentication, Role Authorization & IDOR Ownership Enforcement
 'use strict';
 
 const { verifyToken } = require('../utils/tokens');
 const response = require('../utils/response');
 const db = require('../db/dbAdapter');
 const config = require('../config');
+const logger = require('../utils/logger');
+const { logAction } = require('../services/auditService');
 
 /**
- * Middleware: Verify user is authenticated
+ * Middleware: Verify user is authenticated via Bearer token or HttpOnly cookie
  */
 async function requireAuth(req, res, next) {
   try {
@@ -52,7 +54,7 @@ async function requireAuth(req, res, next) {
       user = {
         id: decoded.sub || 1,
         email: decoded.email || 'admin@hospital.test',
-        name: decoded.name || 'Hospital Admin [TEST]',
+        name: decoded.name || 'Hospital Staff',
         role: decoded.role || 'admin',
         is_active: true,
       };
@@ -84,13 +86,101 @@ function requireRole(...allowedRoles) {
       return response.error(res, 'Authentication required.', 401);
     }
     if (!allowedRoles.includes(req.user.role)) {
+      logger.warn('Unauthorized role access attempt', {
+        user: req.user.email,
+        currentRole: req.user.role,
+        requiredRoles: allowedRoles,
+        path: req.originalUrl
+      });
       return response.error(res, `Forbidden: You do not have permission for this resource. Required role: ${allowedRoles.join(' or ')}`, 403);
     }
     next();
   };
 }
 
+/**
+ * IDOR Prevention Middleware: Enforces data ownership
+ * Verifies that the requester is an authorized staff member or owns the accessed data
+ */
+function enforceOwnership(table, idParam = 'id', ownerField = 'patient_id') {
+  return async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return response.error(res, 'Authentication required.', 401);
+      }
+
+      // Administrators have global management oversight
+      if (req.user.role === 'admin') {
+        return next();
+      }
+
+      const resourceId = parseInt(req.params[idParam], 10);
+      if (isNaN(resourceId)) {
+        return response.error(res, 'Invalid resource ID.', 400);
+      }
+
+      const { data: resource } = await db.from(table).select('*').eq('id', resourceId).single();
+      if (!resource) {
+        return response.error(res, 'Resource not found.', 404);
+      }
+
+      // Doctor access control: can access if assigned to doctor
+      if (req.user.role === 'doctor') {
+        if (resource.doctor_id && resource.doctor_id !== req.user.id) {
+          logger.warn('IDOR violation blocked: Doctor accessing unauthorized appointment/report', {
+            doctorId: req.user.id,
+            resourceId,
+            table
+          });
+          return response.error(res, 'Access denied: You are not the assigned physician for this record.', 403);
+        }
+        return next();
+      }
+
+      // Receptionist/Nurse access: clinical operations
+      if (['receptionist', 'nurse'].includes(req.user.role)) {
+        // Can access appointments and patient records, but not system logs or audit records
+        if (['appointments', 'patients', 'call_logs', 'messages'].includes(table)) {
+          return next();
+        }
+      }
+
+      // Patient/Public ownership verification
+      const isOwner = resource[ownerField] === req.user.id || 
+                      (resource.patient_phone && resource.patient_phone === req.user.phone) ||
+                      (resource.phone && resource.phone === req.user.phone);
+
+      if (!isOwner) {
+        logger.warn('IDOR Attack Attempt Blocked: Unauthorized resource access', {
+          userId: req.user.id,
+          userEmail: req.user.email,
+          resourceId,
+          table,
+          ip: req.ip
+        });
+
+        await logAction({
+          userId: req.user.id,
+          action: 'IDOR_ACCESS_BLOCKED',
+          resourceType: table,
+          resourceId: String(resourceId),
+          details: { ip: req.ip, path: req.originalUrl },
+          ip: req.ip
+        });
+
+        return response.error(res, 'Forbidden: You do not have permission to view or modify this record.', 403);
+      }
+
+      req.resource = resource;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
 module.exports = {
   requireAuth,
   requireRole,
+  enforceOwnership,
 };

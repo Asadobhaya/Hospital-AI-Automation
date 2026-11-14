@@ -67,10 +67,11 @@ describe('Adversarial Security & Edge-Case Audit Suite', () => {
 
   // --- VULNERABILITY AUDIT 2: CONCURRENT DOUBLE-BOOKING RACE ---
   test('Concurrency Audit: Concurrent booking race condition allows only 1 booking and rejects the other', async () => {
-    const randomDays = 80 + Math.floor(Math.random() * 80);
+    const randomDays = Math.floor(Math.random() * 200);
     const targetDate = new Date();
+    targetDate.setFullYear(2030 + Math.floor(Math.random() * 10));
     targetDate.setDate(targetDate.getDate() + randomDays);
-    while (targetDate.getDay() === 0) targetDate.setDate(targetDate.getDate() + 1);
+    while (targetDate.getDay() === 0 || targetDate.getDay() === 6) targetDate.setDate(targetDate.getDate() + 1);
     targetDate.setHours(10, 0, 0, 0);
     const slotIso = targetDate.toISOString();
 
@@ -118,8 +119,8 @@ describe('Adversarial Security & Edge-Case Audit Suite', () => {
   test('Endpoint Audit: Allows POST method on /api/appointments/:id/cancel and :id/reschedule', async () => {
     // 1. Create a dummy test appointment
     const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 150);
-    while (targetDate.getDay() === 0) targetDate.setDate(targetDate.getDate() + 1);
+    targetDate.setDate(targetDate.getDate() + 200 + Math.floor(Math.random() * 150));
+    while (targetDate.getDay() === 0 || targetDate.getDay() === 6) targetDate.setDate(targetDate.getDate() + 1);
     targetDate.setHours(14, 0, 0, 0);
 
     const booking = await appointmentService.bookAppointment({

@@ -16,6 +16,24 @@ async function errorHandler(err, req, res, next) {
     safeMessage = 'Internal Server Error. Please contact hospital support.';
   }
 
+  // Detect and flag security probes or injection patterns
+  const urlLower = req.originalUrl.toLowerCase();
+  if (
+    urlLower.includes('..') ||
+    urlLower.includes('.env') ||
+    urlLower.includes('.git') ||
+    urlLower.includes('wp-admin') ||
+    urlLower.includes('union%20select') ||
+    urlLower.includes('etc/passwd')
+  ) {
+    logger.warn('SECURITY ALERT: Malicious probe pattern intercepted', {
+      ip: req.ip,
+      url: req.originalUrl,
+      method: req.method,
+      userAgent: req.headers['user-agent']
+    });
+  }
+
   // Log error with context
   logger.error(`${req.method} ${req.originalUrl} - ${err.message}`, {
     stack: err.stack,
