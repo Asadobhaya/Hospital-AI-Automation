@@ -56,7 +56,7 @@ describe('Appointment Service - Slot Validation & Double Booking', () => {
     const randomDays = 30 + Math.floor(Math.random() * 100);
     const testDate = new Date();
     testDate.setDate(testDate.getDate() + randomDays);
-    while (testDate.getDay() === 0) { // skip Sunday
+    while (testDate.getDay() === 0 || testDate.getDay() === 6) { // skip Saturday and Sunday (weekends)
       testDate.setDate(testDate.getDate() + 1);
     }
     testDate.setHours(11, 30, 0, 0);

@@ -41,6 +41,7 @@ export default function Button({
     <button
       type={type}
       disabled={disabled || loading}
+      aria-busy={loading ? 'true' : undefined}
       onClick={onClick}
       className={clsx(
         baseClasses,
