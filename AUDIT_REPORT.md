@@ -2,7 +2,7 @@
 
 **Report Date:** November 14, 2026  
 **Auditor:** Senior QA Automation Engineer, Frontend Architect & Healthcare Security Auditor  
-**Live Target Website:** [https://frontend-sepia-six-91.vercel.app/](https://frontend-sepia-six-91.vercel.app/)  
+**Live Target Website:** [https://medipulseai.vercel.app/](https://medipulseai.vercel.app/)  
 **Live API Engine:** [https://hospital-ai-backend-t9gr.onrender.com/api](https://hospital-ai-backend-t9gr.onrender.com/api)  
 **Repository Branch:** `main`  
 **Overall Readiness Verdict:** **PRODUCTION READY (Grade A+)**
