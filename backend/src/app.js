@@ -27,6 +27,7 @@ const webhookRoutes = require('./routes/webhooks');
 const settingsRoutes = require('./routes/settings');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security HTTP headers
 app.use(helmet({

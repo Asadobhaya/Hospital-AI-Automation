@@ -19,11 +19,11 @@ const apiLimiter = rateLimit({
 // Stricter rate limiter for authentication routes (login / refresh)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // max 10 failed login attempts per IP per window
+  max: 100, // max 100 login attempts per IP per window
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    return response.error(res, 'Too many login attempts. Your IP has been temporarily rate limited for 15 minutes.', 429);
+    return response.error(res, 'Too many login attempts. Please wait a moment and try again.', 429);
   },
 });
 
