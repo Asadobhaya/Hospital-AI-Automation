@@ -63,13 +63,19 @@ async function validateSlot(doctorId, slotTimeStr) {
 }
 
 /**
- * Standardize phone number format (+91 default for 10-digit Indian numbers)
+ * Standardize phone number format (+92 default for Pakistani mobile numbers)
  */
 function normalizePhone(phone) {
   if (!phone) return '';
   let clean = phone.toString().replace(/[^\d+]/g, '');
-  if (!clean.startsWith('+')) {
-    if (clean.length === 10) clean = '+91' + clean;
+  if (clean.startsWith('03') && clean.length === 11) {
+    clean = '+92' + clean.slice(1);
+  } else if (clean.startsWith('3') && clean.length === 10) {
+    clean = '+92' + clean;
+  } else if (clean.startsWith('92') && clean.length === 12) {
+    clean = '+' + clean;
+  } else if (!clean.startsWith('+')) {
+    if (clean.length === 10 || clean.length === 11) clean = '+92' + clean.replace(/^0/, '');
     else clean = '+' + clean;
   }
   return clean;

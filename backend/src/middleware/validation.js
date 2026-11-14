@@ -105,8 +105,8 @@ const schemas = {
 
   // Appointments
   bookAppointment: Joi.object({
-    patientPhone: Joi.string().pattern(/^\+?[1-9]\d{6,14}$/).required().messages({
-      'string.pattern.base': 'Phone number must be valid E.164 format (e.g. +919876543210).'
+    patientPhone: Joi.string().pattern(/^(\+92|92|0)?3[0-9]{9}$|^\+?[1-9]\d{6,14}$/).required().messages({
+      'string.pattern.base': 'Phone number must be a valid Pakistani mobile number (e.g. +923001234567 or 03001234567).'
     }),
     patientName: Joi.string().min(2).max(100).optional().default('Patient'),
     doctorId: Joi.number().integer().positive().required(),

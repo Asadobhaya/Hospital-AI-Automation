@@ -427,7 +427,7 @@ export default function Appointments() {
               id="book-patient-name"
               type="text"
               required
-              placeholder="e.g. Ramesh Kumar"
+              placeholder="e.g. Muhammad Ali"
               value={bookingForm.patientName}
               onChange={(e) => setBookingForm({ ...bookingForm, patientName: e.target.value })}
               className="form-input"
@@ -436,13 +436,13 @@ export default function Appointments() {
 
           <div>
             <label htmlFor="book-patient-phone" className="block text-xs font-medium text-slate-300 mb-1">
-              WhatsApp / Mobile Phone (E.164)
+              WhatsApp / Mobile Phone (Pakistan: +92 / 03xx)
             </label>
             <input
               id="book-patient-phone"
               type="text"
               required
-              placeholder="+919876543210"
+              placeholder="+923001234567 or 03001234567"
               value={bookingForm.patientPhone}
               onChange={(e) => setBookingForm({ ...bookingForm, patientPhone: e.target.value })}
               className="form-input"

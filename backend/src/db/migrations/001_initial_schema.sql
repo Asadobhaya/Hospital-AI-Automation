@@ -368,13 +368,13 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Doctors (SYNTHETIC DATA)
 INSERT INTO doctors (name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes) VALUES
-  ('Dr. Amit Sharma [TEST]', 'General Medicine', 1, 500, '{Monday,Tuesday,Wednesday,Thursday,Friday}', '09:00', '17:00', 30),
-  ('Dr. Priya Patel [TEST]', 'Cardiology', 2, 1200, '{Monday,Wednesday,Friday}', '10:00', '16:00', 45),
-  ('Dr. Rajesh Kumar [TEST]', 'Orthopedics', 3, 800, '{Tuesday,Thursday,Saturday}', '09:00', '14:00', 30),
-  ('Dr. Sneha Gupta [TEST]', 'Dermatology', 4, 700, '{Monday,Tuesday,Thursday,Friday}', '11:00', '18:00', 20),
-  ('Dr. Vikram Singh [TEST]', 'Pediatrics', 5, 600, '{Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}', '09:00', '13:00', 30),
-  ('Dr. Anjali Mehta [TEST]', 'ENT', 6, 900, '{Monday,Wednesday,Friday}', '10:00', '15:00', 30),
-  ('Dr. Ravi Verma [TEST]', 'Neurology', 10, 1500, '{Tuesday,Thursday}', '10:00', '16:00', 45)
+  ('Dr. Muhammad Tariq [TEST]', 'General Medicine', 1, 1500, '{Monday,Tuesday,Wednesday,Thursday,Friday}', '09:00', '17:00', 30),
+  ('Dr. Ayesha Khan [TEST]', 'Cardiology', 2, 3000, '{Monday,Wednesday,Friday}', '10:00', '16:00', 45),
+  ('Dr. Usman Farooq [TEST]', 'Orthopedics', 3, 2500, '{Tuesday,Thursday,Saturday}', '09:00', '14:00', 30),
+  ('Dr. Fatima Zahra [TEST]', 'Dermatology', 4, 2000, '{Monday,Tuesday,Thursday,Friday}', '11:00', '18:00', 20),
+  ('Dr. Bilal Ahmed [TEST]', 'Pediatrics', 5, 2000, '{Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}', '09:00', '13:00', 30),
+  ('Dr. Zainab Malik [TEST]', 'ENT', 6, 2200, '{Monday,Wednesday,Friday}', '10:00', '15:00', 30),
+  ('Dr. Hamza Ali [TEST]', 'Neurology', 10, 3500, '{Tuesday,Thursday}', '10:00', '16:00', 45)
 ON CONFLICT DO NOTHING;
 
 -- Admin user (password: Admin@Hospital123 — CHANGE IN PRODUCTION)
@@ -387,7 +387,7 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Sample patients (SYNTHETIC — clearly labeled)
 INSERT INTO patients (phone, name) VALUES
-  ('919876543210', 'Test Patient Aarav [SYNTHETIC]'),
-  ('919876543211', 'Test Patient Diya [SYNTHETIC]'),
-  ('919876543212', 'Test Patient Rohan [SYNTHETIC]')
+  ('+923001234567', 'Test Patient Muhammad Ali [SYNTHETIC]'),
+  ('+923011234568', 'Test Patient Fatima Bibi [SYNTHETIC]'),
+  ('+923021234569', 'Test Patient Ahmed Raza [SYNTHETIC]')
 ON CONFLICT (phone) DO NOTHING;

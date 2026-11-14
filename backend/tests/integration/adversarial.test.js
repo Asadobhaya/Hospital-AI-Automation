@@ -103,15 +103,15 @@ describe('Adversarial Security & Edge-Case Audit Suite', () => {
 
   // --- VULNERABILITY AUDIT 3: PHONE NORMALIZATION & PATIENT UNIQUENESS ---
   test('Data Integrity Audit: Normalizes phone formats preventing split patient profiles', async () => {
-    const uniqueNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    const uniqueNumber = '300' + Math.floor(1000000 + Math.random() * 9000000).toString();
     
-    // Attempt 1: Raw 10 digits
+    // Attempt 1: Raw 10 digits (e.g. 3001234567)
     const p1 = appointmentService.normalizePhone(uniqueNumber);
-    // Attempt 2: Formatted with country code and spaces
-    const p2 = appointmentService.normalizePhone(`+91 ${uniqueNumber.slice(0, 5)}-${uniqueNumber.slice(5)}`);
+    // Attempt 2: Formatted with country code and spaces (+92 300-1234567)
+    const p2 = appointmentService.normalizePhone(`+92 ${uniqueNumber.slice(0, 3)}-${uniqueNumber.slice(3)}`);
 
-    expect(p1).toBe(`+91${uniqueNumber}`);
-    expect(p2).toBe(`+91${uniqueNumber}`);
+    expect(p1).toBe(`+92${uniqueNumber}`);
+    expect(p2).toBe(`+92${uniqueNumber}`);
     expect(p1).toBe(p2);
   });
 

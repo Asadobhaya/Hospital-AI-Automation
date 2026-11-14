@@ -118,7 +118,7 @@ describe('Hospital AI Automation API Integration Tests', () => {
                 value: {
                   messages: [
                     {
-                      from: '+919876543210',
+                      from: '+923001234567',
                       id: 'wamid.HBgLMTIzNDU2',
                       timestamp: Math.floor(Date.now() / 1000).toString(),
                       text: {
@@ -130,7 +130,7 @@ describe('Hospital AI Automation API Integration Tests', () => {
                   contacts: [
                     {
                       profile: { name: 'Integration Test Patient' },
-                      wa_id: '919876543210'
+                      wa_id: '923001234567'
                     }
                   ]
                 }

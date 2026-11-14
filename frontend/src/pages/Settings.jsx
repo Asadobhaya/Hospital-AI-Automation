@@ -242,7 +242,7 @@ export default function Settings() {
             </div>
             <div className="space-y-1.5 text-xs text-slate-300">
               <p>Institution: <strong className="text-white">{hospitalConfig.name || 'MediPulse Apex Hospital'}</strong></p>
-              <p>Emergency Line: <strong className="text-white font-mono">{hospitalConfig.emergencyNumber || '+91 99999 00000'}</strong></p>
+              <p>Emergency Line: <strong className="text-white font-mono">{hospitalConfig.emergencyNumber || '+92 51 111 000 000'}</strong></p>
               <p>Consulting Hours: <strong className="text-white">{hospitalConfig.workingHours?.start || '09:00'} - {hospitalConfig.workingHours?.end || '17:00'}</strong></p>
               <p>Slot Granularity: <strong className="text-white">{hospitalConfig.workingHours?.slotDurationMinutes || 30} minutes</strong></p>
             </div>

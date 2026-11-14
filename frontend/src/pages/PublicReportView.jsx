@@ -77,7 +77,7 @@ export default function PublicReportView() {
               <p className="font-medium text-slate-300">Security & Privacy Notice:</p>
               <p className="mt-1">For patient safety and compliance with data privacy regulations, lab report access links automatically expire 7 days after issue or upon clinical revocation.</p>
               <p className="mt-2 text-slate-300">
-                To request a refreshed link, contact the hospital medical records desk: <strong className="text-white">+91 99999 00000</strong>
+                To request a refreshed link, contact the hospital medical records desk: <strong className="text-white">+92 51 111 000 000</strong>
               </p>
             </div>
           </section>
@@ -142,7 +142,7 @@ export default function PublicReportView() {
 
             <footer className="mt-6 text-center text-xs text-slate-500 flex items-center justify-center gap-1.5">
               <Phone className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Hospital 24x7 Diagnostics Desk: +91 99999 00000</span>
+              <span>Hospital 24x7 Diagnostics Desk: +92 51 111 000 000</span>
             </footer>
           </article>
         )}

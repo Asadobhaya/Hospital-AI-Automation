@@ -292,7 +292,7 @@ export default function Doctors() {
               id="doc-name"
               type="text"
               required
-              placeholder="Dr. Rajesh Gupta"
+              placeholder="Dr. Muhammad Tariq"
               value={doctorForm.name}
               onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })}
               className="form-input"
