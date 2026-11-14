@@ -1,6 +1,6 @@
 // src/App.jsx — Application Router with Route-Level Code Splitting & Suspense
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -18,6 +18,41 @@ const Reports = lazy(() => import('./pages/Reports'));
 const Feedback = lazy(() => import('./pages/Feedback'));
 const Settings = lazy(() => import('./pages/Settings'));
 const PublicReportView = lazy(() => import('./pages/PublicReportView'));
+
+const PAGE_TITLES = {
+  '/': 'Clinical & AI Operations Hub | MediPulse AI',
+  '/appointments': 'Appointment Scheduling & Clinical Consultations | MediPulse AI',
+  '/patients': 'Patient Directory & Longitudinal Medical Records | MediPulse AI',
+  '/doctors': 'Physicians Roster & Consulting Schedules | MediPulse AI',
+  '/messages': 'Automated WhatsApp Patient Communications & Triage | MediPulse AI',
+  '/calls': 'AI Voice Scheduling & Interactive Reminders | MediPulse AI',
+  '/reports': 'Diagnostic Laboratory Reports & Cryptographic Delivery | MediPulse AI',
+  '/feedback': 'Patient Satisfaction & Clinical Care Feedback | MediPulse AI',
+  '/settings': 'Hospital System Configuration & Audit Logs | MediPulse AI',
+  '/login': 'Staff Portal Sign In | MediPulse AI',
+  '/reports/view': 'Verified Diagnostic Lab Report Portal | MediPulse AI',
+};
+
+function PageTitleManager() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const pathname = location.pathname;
+    const title = PAGE_TITLES[pathname] || 'MediPulse AI — Hospital Automation & Clinical Care Platform';
+    document.title = title;
+
+    // Trigger Google Analytics pageview on route change if gtag is defined
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'page_view', {
+        page_title: title,
+        page_location: window.location.href,
+        page_path: pathname,
+      });
+    }
+  }, [location]);
+
+  return null;
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -49,6 +84,7 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <BrowserRouter>
+          <PageTitleManager />
           <Suspense fallback={<div className="p-6"><PageSkeleton /></div>}>
             <Routes>
               {/* Public Routes */}

@@ -1,0 +1,30 @@
+# robots.txt — MediPulse AI Hospital Management Platform
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# OpenAI & ChatGPT Search Crawlers
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+# Other Search Engines & AI Search
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# Canonical Sitemap
+Sitemap: https://frontend-sepia-six-91.vercel.app/sitemap.xml

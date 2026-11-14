@@ -5,18 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173A5E" />
     <meta name="color-scheme" content="light" />
+    
+    <!-- Primary SEO Metadata -->
     <title>MediPulse AI — Hospital Automation & Clinical Care Platform</title>
     <meta
       name="description"
       content="Enterprise healthcare operations platform: AI-assisted voice scheduling, automated WhatsApp patient triage, diagnostic report delivery, and real-time clinical telemetry."
     />
-    <meta property="og:title" content="MediPulse AI — Clinical Operations Hub" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://frontend-sepia-six-91.vercel.app/" />
+
+    <!-- Search Engine & Webmaster Verification -->
+    <!-- Replace with your specific verification tokens from Google Search Console and Bing Webmaster Tools -->
+    <meta name="google-site-verification" content="GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN" />
+    <meta name="msvalidate.01" content="BING_WEBMASTER_VERIFICATION_TOKEN" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://frontend-sepia-six-91.vercel.app/" />
+    <meta property="og:title" content="MediPulse AI — Hospital Automation & Clinical Operations" />
     <meta
       property="og:description"
-      content="Autonomous 24/7 patient journey orchestration, voice reminders, and secure diagnostic token management."
+      content="Autonomous 24/7 patient journey orchestration, voice scheduling reminders, and secure diagnostic lab report token delivery."
     />
-    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://frontend-sepia-six-91.vercel.app/logo-full.jpg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://frontend-sepia-six-91.vercel.app/" />
+    <meta name="twitter:title" content="MediPulse AI — Hospital Automation & Clinical Care" />
+    <meta
+      name="twitter:description"
+      content="Autonomous 24/7 patient journey orchestration, AI voice scheduling, and secure diagnostic report management."
+    />
+    <meta name="twitter:image" content="https://frontend-sepia-six-91.vercel.app/logo-full.jpg" />
+
+    <!-- Favicon & Icons -->
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+
+    <!-- Google Analytics 4 (GA4) -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      // Safe initialization: replace G-MEASUREMENT_ID or inject via VITE_GA_MEASUREMENT_ID
+      const GA_ID = window.__GA_ID__ || 'G-MEDIPULSEAI';
+      gtag('config', GA_ID, {
+        page_path: window.location.pathname,
+        anonymize_ip: true
+      });
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MEDIPULSEAI"></script>
   </head>
   <body class="bg-[#F5F8FC] text-[#4B5D6B] antialiased selection:bg-[#E7F1FB] selection:text-[#173A5E]">
     <div id="root"></div>
