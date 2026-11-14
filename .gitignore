@@ -50,6 +50,7 @@ temp/
 # Database
 *.sqlite
 *.db
+*test_db.json
 
 # Embedded / third-party tools
 gsd-core/

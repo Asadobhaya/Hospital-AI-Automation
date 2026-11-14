@@ -44,12 +44,15 @@ if (isSupabaseConfigured) {
   }
 }
 
-// Local persistent database store (used for offline development, tests, and when Supabase is not provided)
-const dataFile = path.join(__dirname, 'local_db.json');
+// Local persistent database store (isolated from tests to prevent test pollution of operational data)
+const isTestEnv = process.env.NODE_ENV === 'test';
+const dataFile = isTestEnv
+  ? path.join(__dirname, 'test_db.json')
+  : path.join(__dirname, 'local_db.json');
 
-// Initialize default synthetic dataset
+// Initialize default dataset
 function getDefaultData() {
-  const adminPasswordHash = bcrypt.hashSync('Admin@Hospital123', 10);
+  const adminPasswordHash = bcrypt.hashSync('Password@123', 10);
   const now = new Date();
   const todayMorning = new Date(now);
   todayMorning.setHours(10, 0, 0, 0);
@@ -69,18 +72,22 @@ function getDefaultData() {
       { id: 7, name: 'Neurology', description: 'Brain and nervous system', is_active: true },
     ],
     doctors: [
-      { id: 1, name: 'Dr. Muhammad Tariq [TEST]', department: 'General Medicine', department_id: 1, fee: 1500, available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], start_time: '09:00', end_time: '17:00', slot_duration_minutes: 30, is_active: true },
-      { id: 2, name: 'Dr. Ayesha Khan [TEST]', department: 'Cardiology', department_id: 2, fee: 3000, available_days: ['Monday', 'Wednesday', 'Friday'], start_time: '10:00', end_time: '16:00', slot_duration_minutes: 45, is_active: true },
-      { id: 3, name: 'Dr. Usman Farooq [TEST]', department: 'Orthopedics', department_id: 3, fee: 2500, available_days: ['Tuesday', 'Thursday', 'Saturday'], start_time: '09:00', end_time: '14:00', slot_duration_minutes: 30, is_active: true },
-      { id: 4, name: 'Dr. Fatima Zahra [TEST]', department: 'Dermatology', department_id: 4, fee: 2000, available_days: ['Monday', 'Tuesday', 'Thursday', 'Friday'], start_time: '11:00', end_time: '18:00', slot_duration_minutes: 20, is_active: true },
-      { id: 5, name: 'Dr. Bilal Ahmed [TEST]', department: 'Pediatrics', department_id: 5, fee: 2000, available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], start_time: '09:00', end_time: '13:00', slot_duration_minutes: 30, is_active: true },
-      { id: 6, name: 'Dr. Zainab Malik [TEST]', department: 'ENT', department_id: 6, fee: 2200, available_days: ['Monday', 'Wednesday', 'Friday'], start_time: '10:00', end_time: '15:00', slot_duration_minutes: 30, is_active: true },
-      { id: 7, name: 'Dr. Hamza Ali [TEST]', department: 'Neurology', department_id: 7, fee: 3500, available_days: ['Tuesday', 'Thursday'], start_time: '10:00', end_time: '16:00', slot_duration_minutes: 45, is_active: true },
+      { id: 1, name: 'Dr. Muhammad Tariq', department: 'General Medicine', department_id: 1, fee: 1500, available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], start_time: '09:00', end_time: '17:00', slot_duration_minutes: 30, is_active: true },
+      { id: 2, name: 'Dr. Ayesha Khan', department: 'Cardiology', department_id: 2, fee: 3000, available_days: ['Monday', 'Wednesday', 'Friday'], start_time: '10:00', end_time: '16:00', slot_duration_minutes: 45, is_active: true },
+      { id: 3, name: 'Dr. Usman Farooq', department: 'Orthopedics', department_id: 3, fee: 2500, available_days: ['Tuesday', 'Thursday', 'Saturday'], start_time: '09:00', end_time: '14:00', slot_duration_minutes: 30, is_active: true },
+      { id: 4, name: 'Dr. Fatima Zahra', department: 'Dermatology', department_id: 4, fee: 2000, available_days: ['Monday', 'Tuesday', 'Thursday', 'Friday'], start_time: '11:00', end_time: '18:00', slot_duration_minutes: 20, is_active: true },
+      { id: 5, name: 'Dr. Bilal Ahmed', department: 'Pediatrics', department_id: 5, fee: 2000, available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], start_time: '09:00', end_time: '13:00', slot_duration_minutes: 30, is_active: true },
+      { id: 6, name: 'Dr. Zainab Malik', department: 'ENT', department_id: 6, fee: 2200, available_days: ['Monday', 'Wednesday', 'Friday'], start_time: '10:00', end_time: '15:00', slot_duration_minutes: 30, is_active: true },
+      { id: 7, name: 'Dr. Hamza Ali', department: 'Neurology', department_id: 7, fee: 3500, available_days: ['Tuesday', 'Thursday'], start_time: '10:00', end_time: '16:00', slot_duration_minutes: 45, is_active: true },
+      { id: 8, name: 'Dr. Babar Azam', department: 'Cardiology', department_id: 2, fee: 3000, available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], start_time: '09:00', end_time: '17:00', slot_duration_minutes: 30, is_active: true },
     ],
     patients: [
-      { id: 1, phone: '+923001234567', name: 'Test Patient Muhammad Ali [SYNTHETIC]', email: 'ali.test@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
-      { id: 2, phone: '+923011234568', name: 'Test Patient Fatima Bibi [SYNTHETIC]', email: 'fatima.test@example.com', gender: 'female', is_active: true, created_at: new Date(Date.now() - 3 * 86400000).toISOString() },
-      { id: 3, phone: '+923021234569', name: 'Test Patient Ahmed Raza [SYNTHETIC]', email: 'ahmed.test@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 1 * 86400000).toISOString() },
+      { id: 1, phone: '+923001234567', name: 'Muhammad Ali Khan', email: 'ali.khan@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
+      { id: 2, phone: '+923011234568', name: 'Fatima Bibi', email: 'fatima.bibi@example.com', gender: 'female', is_active: true, created_at: new Date(Date.now() - 3 * 86400000).toISOString() },
+      { id: 3, phone: '+923021234569', name: 'Ahmed Raza', email: 'ahmed.raza@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 1 * 86400000).toISOString() },
+      { id: 4, phone: '+923031234570', name: 'Zainab Noor', email: 'zainab.noor@example.com', gender: 'female', is_active: true, created_at: new Date(Date.now() - 12 * 3600 * 1000).toISOString() },
+      { id: 5, phone: '+923041234571', name: 'Tariq Mehmood', email: 'tariq.mehmood@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 6 * 3600 * 1000).toISOString() },
+      { id: 6, phone: '+923004634494', name: 'Asad Ullah', email: 'asad.ullah@example.com', gender: 'male', is_active: true, created_at: new Date().toISOString() },
     ],
     appointments: [
       {
@@ -225,7 +232,7 @@ function getDefaultData() {
         id: '11111111-2222-3333-4444-555555555555',
         email: 'admin@hospital.test',
         password_hash: adminPasswordHash,
-        name: 'Hospital Administrator [TEST]',
+        name: 'Hospital Administrator',
         role: 'admin',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -234,7 +241,7 @@ function getDefaultData() {
         id: '22222222-3333-4444-5555-666666666666',
         email: 'reception@hospital.test',
         password_hash: adminPasswordHash,
-        name: 'Front Desk Officer [TEST]',
+        name: 'Front Desk Officer',
         role: 'receptionist',
         is_active: true,
         created_at: new Date().toISOString(),
@@ -243,7 +250,7 @@ function getDefaultData() {
         id: '33333333-4444-5555-6666-777777777777',
         email: 'doctor@hospital.test',
         password_hash: adminPasswordHash,
-        name: 'Dr. Muhammad Tariq [TEST]',
+        name: 'Dr. Muhammad Tariq',
         role: 'doctor',
         is_active: true,
         created_at: new Date().toISOString(),

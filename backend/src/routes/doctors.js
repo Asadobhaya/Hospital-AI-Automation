@@ -81,4 +81,54 @@ router.post('/', requireAuth, requireRole('admin'), validateBody(schemas.createD
   }
 });
 
+/**
+ * PUT /api/doctors/:id — Update doctor (Admin only)
+ */
+router.put('/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { data: existing } = await db.from('doctors').select('*').eq('id', id).single();
+    if (!existing) {
+      return response.error(res, 'Doctor not found.', 404);
+    }
+
+    const { name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes, is_active } = req.body;
+    const updates = {};
+    if (name) updates.name = name.trim();
+    if (department) updates.department = department.trim();
+    if (department_id) updates.department_id = parseInt(department_id, 10);
+    if (fee !== undefined) updates.fee = Number(fee);
+    if (available_days) updates.available_days = available_days;
+    if (start_time) updates.start_time = start_time;
+    if (end_time) updates.end_time = end_time;
+    if (slot_duration_minutes) updates.slot_duration_minutes = parseInt(slot_duration_minutes, 10);
+    if (is_active !== undefined) updates.is_active = Boolean(is_active);
+    updates.updated_at = new Date().toISOString();
+
+    const { data: updated, error } = await db.from('doctors').update(updates).eq('id', id);
+    if (error) return response.error(res, error.message, 400);
+    return response.success(res, Array.isArray(updated) ? updated[0] : updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * DELETE /api/doctors/:id — Remove doctor (Admin only)
+ */
+router.delete('/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { data: existing } = await db.from('doctors').select('*').eq('id', id).single();
+    if (!existing) {
+      return response.error(res, 'Doctor not found.', 404);
+    }
+    const { error } = await db.from('doctors').delete().eq('id', id);
+    if (error) return response.error(res, error.message, 400);
+    return response.success(res, { message: 'Doctor deleted successfully.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

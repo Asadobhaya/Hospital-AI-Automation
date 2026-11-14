@@ -9,6 +9,7 @@ import {
   Search,
   CheckCircle,
   Phone,
+  Edit2,
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import Button from '../components/Button';
@@ -22,8 +23,10 @@ export default function Doctors() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('all');
 
-  // Add Doctor Modal
+  // Add / Edit Doctor Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('create');
+  const [editingDoctorId, setEditingDoctorId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   const [doctorForm, setDoctorForm] = useState({
@@ -58,7 +61,41 @@ export default function Doctors() {
     fetchData();
   }, []);
 
-  const handleCreateDoctor = async (e) => {
+  const handleOpenCreateDoctor = () => {
+    setModalMode('create');
+    setEditingDoctorId(null);
+    setDoctorForm({
+      name: '',
+      departmentId: departments[0]?.id ? String(departments[0].id) : '1',
+      specialization: '',
+      phone: '',
+      email: '',
+      startTime: '09:00',
+      endTime: '17:00',
+      slotDurationMinutes: '30',
+    });
+    setModalError('');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditDoctor = (doc) => {
+    setModalMode('edit');
+    setEditingDoctorId(doc.id);
+    setDoctorForm({
+      name: doc.name || '',
+      departmentId: doc.department_id ? String(doc.department_id) : '',
+      specialization: doc.qualification || doc.specialization || '',
+      phone: doc.phone || '',
+      email: doc.email || '',
+      startTime: doc.start_time || '09:00',
+      endTime: doc.end_time || '17:00',
+      slotDurationMinutes: doc.slot_duration_minutes ? String(doc.slot_duration_minutes) : '30',
+    });
+    setModalError('');
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitDoctor = async (e) => {
     e.preventDefault();
     setModalError('');
     setSubmitting(true);
@@ -94,7 +131,11 @@ export default function Doctors() {
         payload.email = doctorForm.email.trim();
       }
 
-      await doctorsAPI.create(payload);
+      if (modalMode === 'create') {
+        await doctorsAPI.create(payload);
+      } else {
+        await doctorsAPI.update(editingDoctorId, payload);
+      }
 
       setIsModalOpen(false);
       setDoctorForm({
@@ -109,7 +150,7 @@ export default function Doctors() {
       });
       fetchData();
     } catch (err) {
-      setModalError(err?.message || 'Failed to register physician.');
+      setModalError(err?.message || 'Failed to save physician record.');
     } finally {
       setSubmitting(false);
     }
@@ -141,7 +182,7 @@ export default function Doctors() {
           <Button
             variant="primary"
             size="md"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenCreateDoctor}
             icon={Plus}
           >
             Add Doctor
@@ -258,26 +299,40 @@ export default function Doctors() {
 
               <div className="mt-5 pt-3 border-t border-[#DFE6EE] flex items-center justify-between text-xs">
                 <span className="text-[#617181]">Department #{doc.department_id || 'General'}</span>
-                <span className="text-[#18794E] font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" /> Verified Staff
-                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={Edit2}
+                    onClick={() => handleOpenEditDoctor(doc)}
+                  >
+                    Edit
+                  </Button>
+                  <span className="text-[#18794E] font-semibold flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" /> Verified Staff
+                  </span>
+                </div>
               </div>
             </article>
           ))}
         </section>
       )}
 
-      {/* Add Doctor Modal */}
+      {/* Add / Edit Doctor Modal */}
       <Modal
         open={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setModalError('');
         }}
-        title="Register New Doctor"
-        description="Add a physician to the hospital management system and configure clinical availability hours."
+        title={modalMode === 'create' ? 'Register New Doctor' : 'Edit Physician Profile'}
+        description={
+          modalMode === 'create'
+            ? 'Add a physician to the hospital management system and configure clinical availability hours.'
+            : 'Update physician consulting hours, contact details, or clinical specialty.'
+        }
       >
-        <form onSubmit={handleCreateDoctor} className="space-y-4">
+        <form onSubmit={handleSubmitDoctor} className="space-y-4">
           {modalError && (
             <div role="alert" className="p-3 bg-[#FDECEC] border border-[#B42318]/30 rounded-xl text-[#B42318] text-xs">
               {modalError}

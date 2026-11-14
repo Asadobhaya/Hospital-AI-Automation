@@ -6,6 +6,7 @@ const router = express.Router();
 const db = require('../db/dbAdapter');
 const { requireAuth, enforceOwnership } = require('../middleware/auth');
 const { scrapingProtectionLimiter } = require('../middleware/rateLimiter');
+const { validateBody, schemas } = require('../middleware/validation');
 const response = require('../utils/response');
 
 /**
@@ -67,6 +68,86 @@ router.get('/:id', requireAuth, enforceOwnership('patients', 'id', 'id'), async 
       appointments: appointments || [],
       reports,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * POST /api/patients — Register new patient
+ */
+router.post('/', requireAuth, validateBody(schemas.createPatient), async (req, res, next) => {
+  try {
+    let { name, phone, email, gender, is_active } = req.body;
+    name = (name || '').trim();
+    phone = (phone || '').trim();
+    if (!name || !phone) {
+      return response.error(res, 'Patient name and phone number are required.', 400);
+    }
+
+    // Format phone to E.164 if Pakistani
+    if (phone.startsWith('03') && phone.length === 11) {
+      phone = '+92' + phone.slice(1);
+    } else if (phone.startsWith('923') && phone.length === 12) {
+      phone = '+' + phone;
+    }
+
+    const newPatient = {
+      name,
+      phone,
+      email: email ? email.trim() : null,
+      gender: gender || 'other',
+      is_active: is_active !== undefined ? Boolean(is_active) : true,
+      created_at: new Date().toISOString(),
+      last_message_at: new Date().toISOString(),
+    };
+
+    const { data: created, error } = await db.from('patients').insert(newPatient);
+    if (error) {
+      return response.error(res, error.message || 'Failed to create patient record.', 400);
+    }
+
+    return response.success(res, created, 201);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * PUT /api/patients/:id — Update patient details
+ */
+router.put('/:id', requireAuth, validateBody(schemas.updatePatient), async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    let { name, phone, email, gender, is_active } = req.body;
+
+    const { data: existing } = await db.from('patients').select('*').eq('id', id).single();
+    if (!existing) {
+      return response.error(res, 'Patient record not found.', 404);
+    }
+
+    const updates = {};
+    if (name) updates.name = name.trim();
+    if (phone) {
+      phone = phone.trim();
+      if (phone.startsWith('03') && phone.length === 11) {
+        phone = '+92' + phone.slice(1);
+      } else if (phone.startsWith('923') && phone.length === 12) {
+        phone = '+' + phone;
+      }
+      updates.phone = phone;
+    }
+    if (email !== undefined) updates.email = email ? email.trim() : null;
+    if (gender !== undefined) updates.gender = gender;
+    if (is_active !== undefined) updates.is_active = Boolean(is_active);
+    updates.updated_at = new Date().toISOString();
+
+    const { data: updated, error } = await db.from('patients').update(updates).eq('id', id);
+    if (error) {
+      return response.error(res, error.message || 'Failed to update patient record.', 400);
+    }
+
+    return response.success(res, Array.isArray(updated) ? updated[0] : updated);
   } catch (err) {
     next(err);
   }

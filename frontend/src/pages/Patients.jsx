@@ -8,6 +8,12 @@ import {
   FileText,
   Clock,
   UserCheck,
+  UserX,
+  Plus,
+  Edit2,
+  RefreshCw,
+  X,
+  CheckCircle,
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
@@ -26,6 +32,22 @@ export default function Patients() {
   const [patientHistory, setPatientHistory] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  // Add / Edit Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
+  const [editingPatientId, setEditingPatientId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
+
+  const [patientForm, setPatientForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    gender: 'male',
+    is_active: true,
+  });
+
   const fetchPatients = async () => {
     try {
       setLoading(true);
@@ -40,7 +62,7 @@ export default function Patients() {
         setTotalPages(res.pagination.totalPages || 1);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch patients:', err);
     } finally {
       setLoading(false);
     }
@@ -63,6 +85,88 @@ export default function Patients() {
     }
   };
 
+  const handleOpenCreateModal = () => {
+    setModalMode('create');
+    setEditingPatientId(null);
+    setPatientForm({
+      name: '',
+      phone: '',
+      email: '',
+      gender: 'male',
+      is_active: true,
+    });
+    setFormError('');
+    setFormSuccess('');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (patient) => {
+    setModalMode('edit');
+    setEditingPatientId(patient.id);
+    setPatientForm({
+      name: patient.name || '',
+      phone: patient.phone || '',
+      email: patient.email || '',
+      gender: patient.gender || 'male',
+      is_active: patient.is_active !== undefined ? patient.is_active : true,
+    });
+    setFormError('');
+    setFormSuccess('');
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitPatient = async (e) => {
+    e.preventDefault();
+    setFormError('');
+    setFormSuccess('');
+    setSubmitting(true);
+
+    try {
+      let rawPhone = patientForm.phone.trim();
+      if (!patientForm.name.trim()) {
+        throw new Error('Patient full name is required.');
+      }
+      if (!rawPhone) {
+        throw new Error('Phone number is required.');
+      }
+
+      // Format to Pakistani standard if applicable
+      if (rawPhone.startsWith('03') && rawPhone.length === 11) {
+        rawPhone = '+92' + rawPhone.slice(1);
+      } else if (rawPhone.startsWith('923') && rawPhone.length === 12) {
+        rawPhone = '+' + rawPhone;
+      }
+
+      const payload = {
+        name: patientForm.name.trim(),
+        phone: rawPhone,
+        email: patientForm.email.trim() || undefined,
+        gender: patientForm.gender,
+        is_active: patientForm.is_active,
+      };
+
+      if (modalMode === 'create') {
+        const res = await patientsAPI.create(payload);
+        setFormSuccess('Patient registered successfully!');
+        setTimeout(() => {
+          setIsModalOpen(false);
+          fetchPatients();
+        }, 600);
+      } else {
+        const res = await patientsAPI.update(editingPatientId, payload);
+        setFormSuccess('Patient record updated successfully!');
+        setTimeout(() => {
+          setIsModalOpen(false);
+          fetchPatients();
+        }, 600);
+      }
+    } catch (err) {
+      setFormError(err.message || 'Failed to save patient record.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -72,6 +176,23 @@ export default function Patients() {
           <p className="text-sm text-[#617181] mt-1">
             Verified patient records, contact identifiers & longitudinal visit history
           </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            icon={RefreshCw}
+            onClick={fetchPatients}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="primary"
+            icon={Plus}
+            onClick={handleOpenCreateModal}
+          >
+            Register Patient
+          </Button>
         </div>
       </header>
 
@@ -112,14 +233,14 @@ export default function Patients() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[650px]">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-[#DFE6EE] bg-[#F5F8FC] text-xs font-semibold text-[#172B3A] uppercase tracking-wider">
                   <th scope="col" className="py-3.5 px-5">Patient Name</th>
                   <th scope="col" className="py-3.5 px-5">Phone Number</th>
                   <th scope="col" className="py-3.5 px-5">Last Inbound Contact</th>
                   <th scope="col" className="py-3.5 px-5">Clinical Status</th>
-                  <th scope="col" className="py-3.5 px-5 text-right">Action</th>
+                  <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#DFE6EE] text-sm">
@@ -130,7 +251,7 @@ export default function Patients() {
                         className="w-8 h-8 rounded-full bg-[#E7F1FB] text-[#2F78C8] border border-[#DFE6EE] flex items-center justify-center font-bold text-xs shrink-0"
                         aria-hidden="true"
                       >
-                        {p.name.charAt(0)}
+                        {(p.name || 'P').charAt(0)}
                       </div>
                       <span className="truncate">{p.name}</span>
                     </td>
@@ -138,22 +259,39 @@ export default function Patients() {
                       {p.phone}
                     </td>
                     <td className="py-3.5 px-5 text-xs text-[#617181]">
-                      {p.last_message_at ? new Date(p.last_message_at).toLocaleString() : 'Registered via Booking'}
+                      {p.last_message_at ? new Date(p.last_message_at).toLocaleString() : 'Registered via Portal'}
                     </td>
                     <td className="py-3.5 px-5">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E7F5EC] text-[#18794E] border border-[#18794E]/20">
-                        <UserCheck className="w-3.5 h-3.5" aria-hidden="true" />
-                        <span>Active</span>
-                      </span>
+                      {p.is_active !== false ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E7F5EC] text-[#18794E] border border-[#18794E]/20">
+                          <UserCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Active</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#FFF2D8] text-[#8A4B08] border border-[#8A4B08]/20">
+                          <UserX className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Inactive</span>
+                        </span>
+                      )}
                     </td>
                     <td className="py-3.5 px-5 text-right">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleOpenPatientHistory(p)}
-                      >
-                        View History
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          icon={Edit2}
+                          onClick={() => handleOpenEditModal(p)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleOpenPatientHistory(p)}
+                        >
+                          View History
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -172,6 +310,115 @@ export default function Patients() {
           </div>
         )}
       </section>
+
+      {/* Add / Edit Patient Modal */}
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalMode === 'create' ? 'Register New Patient' : 'Edit Patient Information'}
+        description="Save patient demographics and verified Pakistani contact information."
+        size="md"
+      >
+        <form onSubmit={handleSubmitPatient} className="space-y-4">
+          {formError && (
+            <div className="p-3 bg-[#FDECEC] text-[#B42318] text-xs rounded-xl border border-[#B42318]/20">
+              {formError}
+            </div>
+          )}
+          {formSuccess && (
+            <div className="p-3 bg-[#E7F5EC] text-[#18794E] text-xs rounded-xl border border-[#18794E]/20 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              <span>{formSuccess}</span>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-semibold text-[#172B3A] uppercase tracking-wider mb-1.5">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Asad Ullah"
+              value={patientForm.name}
+              onChange={(e) => setPatientForm({ ...patientForm, name: e.target.value })}
+              className="form-input"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[#172B3A] uppercase tracking-wider mb-1.5">
+              WhatsApp / Mobile Phone (Pakistan: 03xx or +923xx) *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="03004634494 or +923004634494"
+              value={patientForm.phone}
+              onChange={(e) => setPatientForm({ ...patientForm, phone: e.target.value })}
+              className="form-input font-mono"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#172B3A] uppercase tracking-wider mb-1.5">
+                Email Address (Optional)
+              </label>
+              <input
+                type="email"
+                placeholder="patient@example.com"
+                value={patientForm.email}
+                onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
+                className="form-input"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#172B3A] uppercase tracking-wider mb-1.5">
+                Gender
+              </label>
+              <select
+                value={patientForm.gender}
+                onChange={(e) => setPatientForm({ ...patientForm, gender: e.target.value })}
+                className="form-input"
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-xs font-semibold text-[#172B3A] cursor-pointer mt-2">
+              <input
+                type="checkbox"
+                checked={patientForm.is_active}
+                onChange={(e) => setPatientForm({ ...patientForm, is_active: e.target.checked })}
+                className="rounded border-[#DFE6EE] text-[#2F78C8] focus:ring-[#175DB5]"
+              />
+              <span>Patient Account Active</span>
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DFE6EE]">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={submitting}
+            >
+              {modalMode === 'create' ? 'Register Patient' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Patient History Detail Modal */}
       <Modal

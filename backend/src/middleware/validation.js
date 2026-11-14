@@ -150,6 +150,30 @@ const schemas = {
     ]),
   }),
 
+  // Patients
+  createPatient: Joi.object({
+    name: Joi.string().min(2).max(100).required().messages({
+      'any.required': 'Patient name is required.',
+      'string.min': 'Patient name must be at least 2 characters.'
+    }),
+    phone: Joi.string().pattern(/^(\+92|92|0)?3[0-9]{9}$|^\+?[1-9]\d{6,14}$/).required().messages({
+      'string.pattern.base': 'Phone number must be a valid Pakistani mobile number (e.g. +923001234567 or 03001234567).'
+    }),
+    email: Joi.string().email({ tlds: { allow: false } }).allow('', null).optional(),
+    gender: Joi.string().valid('male', 'female', 'other').optional().default('other'),
+    is_active: Joi.boolean().optional().default(true),
+  }),
+
+  updatePatient: Joi.object({
+    name: Joi.string().min(2).max(100).optional(),
+    phone: Joi.string().pattern(/^(\+92|92|0)?3[0-9]{9}$|^\+?[1-9]\d{6,14}$/).optional().messages({
+      'string.pattern.base': 'Phone number must be a valid Pakistani mobile number (e.g. +923001234567 or 03001234567).'
+    }),
+    email: Joi.string().email({ tlds: { allow: false } }).allow('', null).optional(),
+    gender: Joi.string().valid('male', 'female', 'other').optional(),
+    is_active: Joi.boolean().optional(),
+  }),
+
   // Reports
   createReport: Joi.object({
     patientId: Joi.number().integer().positive().required(),

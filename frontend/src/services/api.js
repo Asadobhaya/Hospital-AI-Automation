@@ -105,6 +105,8 @@ export const patientsAPI = {
     return request(`/patients${qs ? `?${qs}` : ''}`);
   },
   getById: (id) => request(`/patients/${id}`),
+  create: (data) => request('/patients', { method: 'POST', body: data }),
+  update: (id, data) => request(`/patients/${id}`, { method: 'PUT', body: data }),
   getAppointments: (id) => request(`/patients/${id}/appointments`),
   getReports: (id) => request(`/patients/${id}/reports`),
   getFeedback: (id) => request(`/patients/${id}/feedback`),
