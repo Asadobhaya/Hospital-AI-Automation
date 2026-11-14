@@ -153,7 +153,7 @@ const schemas = {
   // Reports
   createReport: Joi.object({
     patientId: Joi.number().integer().positive().required(),
-    reportType: Joi.string().valid('general', 'blood_test', 'radiology', 'pathology', 'prescription', 'discharge_summary').required(),
+    reportType: Joi.string().min(2).max(100).required(),
     reportUrl: Joi.string().uri().required(),
     doctorNotes: Joi.string().max(2000).allow('', null).optional(),
     isCritical: Joi.boolean().default(false),
