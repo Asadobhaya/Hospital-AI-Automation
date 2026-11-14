@@ -20,6 +20,13 @@ import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Pagination from '../components/Pagination';
+import { appointmentsAPI, doctorsAPI } from '../services/api';
+
+const getTomorrowDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+};
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
@@ -48,14 +55,14 @@ export default function Appointments() {
     patientName: '',
     patientPhone: '',
     doctorId: '',
-    slotDate: '',
+    slotDate: getTomorrowDate(),
     slotTime: '10:00',
     notes: ''
   });
 
   // Reschedule Form State
   const [rescheduleForm, setRescheduleForm] = useState({
-    slotDate: '',
+    slotDate: getTomorrowDate(),
     slotTime: '10:00',
     reason: ''
   });
@@ -63,34 +70,29 @@ export default function Appointments() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const queryParams = new URLSearchParams({
+      const params = {
         page: page.toString(),
         limit: '15',
         ...(statusFilter !== 'all' && { status: statusFilter }),
         ...(doctorFilter !== 'all' && { doctor_id: doctorFilter }),
         ...(searchTerm && { search: searchTerm })
-      });
+      };
 
-      const [apptsRes, docsRes] = await Promise.all([
-        fetch(`/api/appointments?${queryParams.toString()}`, { credentials: 'include' }),
-        fetch('/api/doctors', { credentials: 'include' })
+      const [apptsData, docsData] = await Promise.all([
+        appointmentsAPI.list(params),
+        doctorsAPI.list()
       ]);
 
-      if (!apptsRes.ok) throw new Error('Failed to load appointments list');
-      const apptsData = await apptsRes.json();
-      setAppointments(apptsData.data || []);
-      if (apptsData.pagination) {
+      setAppointments(apptsData?.data || apptsData || []);
+      if (apptsData?.pagination) {
         setTotalPages(apptsData.pagination.totalPages || 1);
         setTotalCount(apptsData.pagination.total || 0);
       }
 
-      if (docsRes.ok) {
-        const docsData = await docsRes.json();
-        setDoctors(docsData.data || []);
-      }
+      setDoctors(docsData?.data || docsData || []);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || 'Failed to load appointments');
     } finally {
       setLoading(false);
     }
@@ -107,29 +109,19 @@ export default function Appointments() {
 
     try {
       const fullSlotTime = `${bookingForm.slotDate}T${bookingForm.slotTime}:00`;
-      const res = await fetch('/api/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          patientName: bookingForm.patientName,
-          patientPhone: bookingForm.patientPhone,
-          doctorId: parseInt(bookingForm.doctorId, 10),
-          slotTime: fullSlotTime,
-          notes: bookingForm.notes
-        })
+      await appointmentsAPI.create({
+        patientName: bookingForm.patientName,
+        patientPhone: bookingForm.patientPhone,
+        doctorId: parseInt(bookingForm.doctorId, 10),
+        slotTime: fullSlotTime,
+        notes: bookingForm.notes
       });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error?.message || json.message || 'Failed to book appointment');
-      }
-
       setIsBookModalOpen(false);
-      setBookingForm({ patientName: '', patientPhone: '', doctorId: '', slotDate: '', slotTime: '10:00', notes: '' });
+      setBookingForm({ patientName: '', patientPhone: '', doctorId: '', slotDate: getTomorrowDate(), slotTime: '10:00', notes: '' });
       fetchData();
     } catch (err) {
-      setActionError(err.message);
+      setActionError(err.message || 'Failed to book slot');
     } finally {
       setActionLoading(false);
     }
@@ -143,26 +135,16 @@ export default function Appointments() {
 
     try {
       const fullSlotTime = `${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00`;
-      const res = await fetch(`/api/appointments/${selectedAppt.id}/reschedule`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          newSlotTime: fullSlotTime,
-          reason: rescheduleForm.reason
-        })
+      await appointmentsAPI.reschedule(selectedAppt.id, {
+        newSlotTime: fullSlotTime,
+        reason: rescheduleForm.reason
       });
-
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error?.message || json.message || 'Rescheduling failed');
-      }
 
       setIsRescheduleModalOpen(false);
       setSelectedAppt(null);
       fetchData();
     } catch (err) {
-      setActionError(err.message);
+      setActionError(err.message || 'Rescheduling failed');
     } finally {
       setActionLoading(false);
     }
@@ -171,15 +153,11 @@ export default function Appointments() {
   const handleCancelConfirm = async () => {
     if (!cancelDialogAppt) return;
     try {
-      const res = await fetch(`/api/appointments/${cancelDialogAppt.id}/cancel`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      if (!res.ok) throw new Error('Cancellation failed');
+      await appointmentsAPI.cancel(cancelDialogAppt.id);
       setCancelDialogAppt(null);
       fetchData();
     } catch (err) {
-      alert(err.message);
+      alert(err.message || 'Cancellation failed');
     }
   };
 
@@ -432,7 +410,9 @@ export default function Appointments() {
             >
               <option value="">Choose a doctor...</option>
               {doctors.map((d) => (
-                <option key={d.id} value={d.id}>{d.name} — {d.specialization} ({d.start_time} to {d.end_time})</option>
+                <option key={d.id} value={d.id}>
+                  {d.name} — {d.department || d.specialization || 'Clinical'} ({d.start_time?.slice(0, 5) || '09:00'} - {d.end_time?.slice(0, 5) || '17:00'})
+                </option>
               ))}
             </select>
           </div>

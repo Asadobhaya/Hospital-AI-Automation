@@ -29,7 +29,7 @@ async function validateSlot(doctorId, slotTimeStr) {
   const dayOfWeek = dayNames[slotDate.getDay()];
   if (Array.isArray(doctor.available_days) && doctor.available_days.length > 0) {
     if (!doctor.available_days.includes(dayOfWeek)) {
-      throw new Error(`Doctor ${doctor.name} is not available on ${dayOfWeek}s.`);
+      throw new Error(`Doctor ${doctor.name} is not available on ${dayOfWeek}s. Available days: ${doctor.available_days.join(', ')}.`);
     }
   }
 

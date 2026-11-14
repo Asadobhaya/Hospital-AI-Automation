@@ -41,31 +41,33 @@ export default function Sidebar({ open, onClose }) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200 
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-slate-900 border-r border-slate-800 
           flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-700 rounded-lg flex items-center justify-center">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-primary-500/20">
               <Activity className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-gray-900 leading-tight">Hospital AI</h1>
-              <p className="text-[10px] text-gray-500 leading-tight">Admin Dashboard</p>
+              <span className="text-lg font-bold text-white tracking-tight">
+                MediPulse <span className="text-primary-400 font-medium">AI</span>
+              </span>
+              <p className="text-[11px] text-slate-400 leading-none">Clinical Operations</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden p-1 text-gray-400 hover:text-gray-600 rounded"
+            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -74,35 +76,37 @@ export default function Sidebar({ open, onClose }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                ${isActive
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`
-              }
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              <span>{label}</span>
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-primary-600/15 text-primary-400 border border-primary-500/30 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
-        {/* Logout */}
-        <div className="px-3 py-4 border-t border-gray-100">
+        {/* Footer with Logout */}
+        <div className="p-3 border-t border-slate-800">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium 
-                       text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors w-full"
+            className="flex items-center gap-3 w-full px-3.5 py-2.5 text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-950/20 rounded-xl transition cursor-pointer"
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span>Logout</span>
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

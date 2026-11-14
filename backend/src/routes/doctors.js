@@ -45,17 +45,27 @@ router.get('/:id', requireAuth, async (req, res, next) => {
  */
 router.post('/', requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
-    const { name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes } = req.body;
-    if (!name || !department) {
-      return response.error(res, 'Name and department are required.', 400);
+    let { name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes } = req.body;
+    if (!name) {
+      return response.error(res, 'Name is required.', 400);
     }
+
+    if (!department && department_id) {
+      try {
+        const { data: dept } = await db.from('departments').select('name').eq('id', department_id).single();
+        if (dept && dept.name) department = dept.name;
+      } catch {
+        department = null;
+      }
+    }
+    if (!department) department = 'General Medicine';
 
     const { data: created, error } = await db.from('doctors').insert({
       name,
       department,
       department_id: department_id || null,
       fee: fee || 500,
-      available_days: available_days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      available_days: available_days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       start_time: start_time || '09:00',
       end_time: end_time || '17:00',
       slot_duration_minutes: slot_duration_minutes || 30,

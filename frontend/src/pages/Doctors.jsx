@@ -14,6 +14,7 @@ import {
   Phone
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import { doctorsAPI, departmentsAPI } from '../services/api';
 
 export default function Doctors() {
   const [doctors, setDoctors] = useState([]);
@@ -41,20 +42,14 @@ export default function Doctors() {
     try {
       setLoading(true);
       const [docsRes, deptsRes] = await Promise.all([
-        fetch('/api/doctors', { credentials: 'include' }),
-        fetch('/api/departments', { credentials: 'include' })
+        doctorsAPI.list(),
+        departmentsAPI.list()
       ]);
 
-      if (docsRes.ok) {
-        const d = await docsRes.json();
-        setDoctors(d.data || []);
-      }
-      if (deptsRes.ok) {
-        const dep = await deptsRes.json();
-        setDepartments(dep.data || []);
-      }
+      setDoctors(docsRes?.data || docsRes || []);
+      setDepartments(deptsRes?.data || deptsRes || []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load doctors:', err);
     } finally {
       setLoading(false);
     }
@@ -70,25 +65,19 @@ export default function Doctors() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('/api/doctors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: doctorForm.name,
-          department_id: parseInt(doctorForm.departmentId, 10),
-          specialization: doctorForm.specialization,
-          phone: doctorForm.phone,
-          email: doctorForm.email,
-          start_time: doctorForm.startTime,
-          end_time: doctorForm.endTime,
-          slot_duration_minutes: parseInt(doctorForm.slotDurationMinutes, 10),
-          available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-        })
+      const selectedDeptObj = departments.find(d => String(d.id) === String(doctorForm.departmentId));
+      await doctorsAPI.create({
+        name: doctorForm.name,
+        department: selectedDeptObj ? selectedDeptObj.name : 'General Medicine',
+        department_id: parseInt(doctorForm.departmentId, 10),
+        qualification: doctorForm.specialization,
+        phone: doctorForm.phone,
+        email: doctorForm.email,
+        start_time: doctorForm.startTime,
+        end_time: doctorForm.endTime,
+        slot_duration_minutes: parseInt(doctorForm.slotDurationMinutes, 10) || 30,
+        available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
       });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error?.message || json.message || 'Failed to add doctor');
 
       setIsModalOpen(false);
       setDoctorForm({
@@ -103,7 +92,7 @@ export default function Doctors() {
       });
       fetchData();
     } catch (err) {
-      setModalError(err.message);
+      setModalError(err.message || 'Failed to register doctor');
     } finally {
       setSubmitting(false);
     }
