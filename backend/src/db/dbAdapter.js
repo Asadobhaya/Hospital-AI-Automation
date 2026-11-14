@@ -8,6 +8,7 @@ const config = require('../config');
 const logger = require('../utils/logger');
 
 let supabase = null;
+let isSupabaseOnline = false;
 const isSupabaseConfigured = Boolean(
   config.supabase.url &&
   config.supabase.serviceRoleKey &&
@@ -21,10 +22,25 @@ if (isSupabaseConfigured) {
     supabase = createClient(config.supabase.url, config.supabase.serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    logger.info('Connected to remote Supabase database');
+    // Verify actual remote connectivity asynchronously
+    supabase.from('departments').select('id').limit(1)
+      .then(({ error }) => {
+        if (error) {
+          logger.warn('Supabase remote query returned error, using resilient local storage', error);
+          isSupabaseOnline = false;
+        } else {
+          logger.info('Connected and verified remote Supabase database');
+          isSupabaseOnline = true;
+        }
+      })
+      .catch((err) => {
+        logger.warn('Supabase remote connection unreachable, using resilient local storage', err);
+        isSupabaseOnline = false;
+      });
   } catch (err) {
     logger.warn('Failed to initialize Supabase client, falling back to local database adapter', err);
     supabase = null;
+    isSupabaseOnline = false;
   }
 }
 
@@ -575,13 +591,13 @@ class QueryBuilder {
 // Database interface
 const db = {
   from(table) {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseConfigured && supabase && isSupabaseOnline) {
       return supabase.from(table);
     }
     return new QueryBuilder(table);
   },
   isSupabaseConnected() {
-    return isSupabaseConfigured && Boolean(supabase);
+    return isSupabaseConfigured && Boolean(supabase) && isSupabaseOnline;
   },
   getDb() {
     return db;
