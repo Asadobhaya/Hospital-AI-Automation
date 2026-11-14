@@ -17,7 +17,7 @@ async function request(endpoint, options = {}) {
   }
 
   const response = await fetch(url, config).catch((err) => {
-    throw new Error('Cannot connect to backend API server at http://localhost:3001. Please ensure the backend is started.');
+    throw new Error(`Cannot connect to backend API server at ${url}. The server may be starting up on Render (free tier takes ~30-50s to wake up). Please try again in a moment.`);
   });
 
   if (response.status === 401 && endpoint !== '/auth/login' && endpoint !== '/auth/me') {
