@@ -1,153 +1,156 @@
-// src/components/StatusBadge.jsx — High-Contrast Accessible Clinical Status Badge
+// src/components/StatusBadge.jsx — Medical Blue & White Accessible Status Badge
 import React from 'react';
 import { clsx } from 'clsx';
 
 const statusConfig = {
   confirmed: {
-    bg: 'bg-emerald-950/60 border-emerald-500/30',
-    text: 'text-emerald-400',
-    dot: 'bg-emerald-400',
+    bg: 'bg-[#E7F5EC] border-[#18794E]/20',
+    text: 'text-[#18794E]',
+    dot: 'bg-[#18794E]',
     label: 'Confirmed',
   },
   completed: {
-    bg: 'bg-sky-950/60 border-sky-500/30',
-    text: 'text-sky-400',
-    dot: 'bg-sky-400',
+    bg: 'bg-[#E7F0FF] border-[#2458A6]/20',
+    text: 'text-[#2458A6]',
+    dot: 'bg-[#2458A6]',
     label: 'Completed',
   },
   cancelled: {
-    bg: 'bg-rose-950/60 border-rose-500/30',
-    text: 'text-rose-400',
-    dot: 'bg-rose-400',
+    bg: 'bg-[#FDECEC] border-[#B42318]/20',
+    text: 'text-[#B42318]',
+    dot: 'bg-[#B42318]',
     label: 'Cancelled',
   },
   missed: {
-    bg: 'bg-amber-950/60 border-amber-500/30',
-    text: 'text-amber-400',
-    dot: 'bg-amber-400',
+    bg: 'bg-[#FFF2D8] border-[#8A4B08]/20',
+    text: 'text-[#8A4B08]',
+    dot: 'bg-[#8A4B08]',
     label: 'Missed',
   },
   reschedule_pending: {
-    bg: 'bg-amber-950/60 border-amber-500/30',
-    text: 'text-amber-400',
-    dot: 'bg-amber-400',
+    bg: 'bg-[#FFF2D8] border-[#8A4B08]/20',
+    text: 'text-[#8A4B08]',
+    dot: 'bg-[#8A4B08]',
     label: 'Reschedule Pending',
   },
   reschedule_requested: {
-    bg: 'bg-amber-950/60 border-amber-500/30',
-    text: 'text-amber-400',
-    dot: 'bg-amber-400',
+    bg: 'bg-[#FFF2D8] border-[#8A4B08]/20',
+    text: 'text-[#8A4B08]',
+    dot: 'bg-[#8A4B08]',
     label: 'Reschedule Requested',
   },
   pending: {
-    bg: 'bg-slate-800/80 border-slate-700/60',
-    text: 'text-slate-300',
-    dot: 'bg-slate-400',
+    bg: 'bg-[#F5F8FC] border-[#DFE6EE]',
+    text: 'text-[#4B5D6B]',
+    dot: 'bg-[#617181]',
     label: 'Pending',
   },
   scheduled: {
-    bg: 'bg-indigo-950/60 border-indigo-500/30',
-    text: 'text-indigo-400',
-    dot: 'bg-indigo-400',
+    bg: 'bg-[#E7F1FB] border-[#2F78C8]/25',
+    text: 'text-[#173A5E]',
+    dot: 'bg-[#2F78C8]',
     label: 'Scheduled',
   },
   success: {
-    bg: 'bg-emerald-950/60 border-emerald-500/30',
-    text: 'text-emerald-400',
-    dot: 'bg-emerald-400',
+    bg: 'bg-[#E7F5EC] border-[#18794E]/20',
+    text: 'text-[#18794E]',
+    dot: 'bg-[#18794E]',
     label: 'Success',
   },
   failed: {
-    bg: 'bg-rose-950/60 border-rose-500/30',
-    text: 'text-rose-400',
-    dot: 'bg-rose-400',
+    bg: 'bg-[#FDECEC] border-[#B42318]/20',
+    text: 'text-[#B42318]',
+    dot: 'bg-[#B42318]',
     label: 'Failed',
   },
-  no_answer: {
-    bg: 'bg-slate-800/80 border-slate-700/50',
-    text: 'text-slate-400',
-    dot: 'bg-slate-500',
-    label: 'No Answer',
-  },
   delivered: {
-    bg: 'bg-emerald-950/60 border-emerald-500/30',
-    text: 'text-emerald-400',
-    dot: 'bg-emerald-400',
+    bg: 'bg-[#E7F5EC] border-[#18794E]/20',
+    text: 'text-[#18794E]',
+    dot: 'bg-[#18794E]',
     label: 'Delivered',
   },
-  sent: {
-    bg: 'bg-sky-950/60 border-sky-500/30',
-    text: 'text-sky-400',
-    dot: 'bg-sky-400',
-    label: 'Sent',
-  },
-  read: {
-    bg: 'bg-teal-950/60 border-teal-500/30',
-    text: 'text-teal-300',
-    dot: 'bg-teal-400',
-    label: 'Read',
+  received: {
+    bg: 'bg-[#E7F0FF] border-[#2458A6]/20',
+    text: 'text-[#2458A6]',
+    dot: 'bg-[#2458A6]',
+    label: 'Received',
   },
   queued: {
-    bg: 'bg-slate-800/70 border-slate-700/50',
-    text: 'text-slate-300',
-    dot: 'bg-slate-400',
+    bg: 'bg-[#FFF2D8] border-[#8A4B08]/20',
+    text: 'text-[#8A4B08]',
+    dot: 'bg-[#8A4B08]',
     label: 'Queued',
   },
   in_progress: {
-    bg: 'bg-blue-950/60 border-blue-500/30',
-    text: 'text-blue-400',
-    dot: 'bg-blue-400 animate-pulse',
+    bg: 'bg-[#E7F0FF] border-[#2458A6]/20',
+    text: 'text-[#2458A6]',
+    dot: 'bg-[#2458A6]',
     label: 'In Progress',
   },
-  active: {
-    bg: 'bg-emerald-950/60 border-emerald-500/30',
-    text: 'text-emerald-400',
-    dot: 'bg-emerald-400',
-    label: 'Active',
+  resolved: {
+    bg: 'bg-[#E7F5EC] border-[#18794E]/20',
+    text: 'text-[#18794E]',
+    dot: 'bg-[#18794E]',
+    label: 'Resolved',
   },
-  expired: {
-    bg: 'bg-rose-950/60 border-rose-500/30',
-    text: 'text-rose-400',
-    dot: 'bg-rose-400',
-    label: 'Expired',
+  unresolved: {
+    bg: 'bg-[#FDECEC] border-[#B42318]/20',
+    text: 'text-[#B42318]',
+    dot: 'bg-[#B42318]',
+    label: 'Action Required',
   },
-  revoked: {
-    bg: 'bg-slate-800/80 border-slate-700/50',
-    text: 'text-slate-400',
-    dot: 'bg-slate-500',
-    label: 'Revoked',
+  urgent: {
+    bg: 'bg-[#FDECEC] border-[#B42318]/30',
+    text: 'text-[#B42318]',
+    dot: 'bg-[#B42318]',
+    label: 'Urgent',
   },
   critical: {
-    bg: 'bg-red-950/70 border-red-500/40',
-    text: 'text-red-300 font-semibold',
-    dot: 'bg-red-400 animate-pulse',
-    label: 'Critical',
+    bg: 'bg-[#FDECEC] border-[#B42318]/30',
+    text: 'text-[#B42318]',
+    dot: 'bg-[#B42318]',
+    label: 'Critical Alert',
   },
   normal: {
-    bg: 'bg-slate-800/60 border-slate-700/50',
-    text: 'text-slate-300',
-    dot: 'bg-slate-400',
+    bg: 'bg-[#E7F5EC] border-[#18794E]/20',
+    text: 'text-[#18794E]',
+    dot: 'bg-[#18794E]',
     label: 'Normal',
+  },
+  active: {
+    bg: 'bg-[#E7F5EC] border-[#18794E]/20',
+    text: 'text-[#18794E]',
+    dot: 'bg-[#18794E]',
+    label: 'Active',
+  },
+  inactive: {
+    bg: 'bg-[#F5F8FC] border-[#DFE6EE]',
+    text: 'text-[#617181]',
+    dot: 'bg-[#8898AA]',
+    label: 'Inactive',
   },
 };
 
 export default function StatusBadge({ status, className = '' }) {
-  const key = status?.toLowerCase()?.replace(/[\s-]+/g, '_');
+  if (!status) return null;
+
+  const key = String(status).toLowerCase();
   const config = statusConfig[key] || {
-    bg: 'bg-slate-800/80 border-slate-700/50',
-    text: 'text-slate-300',
-    dot: 'bg-slate-400',
-    label: status || 'Unknown',
+    bg: 'bg-[#F5F8FC] border-[#DFE6EE]',
+    text: 'text-[#4B5D6B]',
+    dot: 'bg-[#617181]',
+    label: status,
   };
 
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border tracking-wide select-none',
+        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border shadow-xs',
         config.bg,
         config.text,
         className
       )}
+      role="status"
     >
       <span className={clsx('w-1.5 h-1.5 rounded-full shrink-0', config.dot)} aria-hidden="true" />
       <span>{config.label}</span>

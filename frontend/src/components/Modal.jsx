@@ -1,4 +1,4 @@
-// src/components/Modal.jsx — Production Accessible Modal Dialog
+// src/components/Modal.jsx — Production Accessible Modal Dialog (Medical Blue & White)
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
@@ -98,7 +98,7 @@ export default function Modal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#172B3A]/50 backdrop-blur-2xs animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose();
       }}
@@ -106,19 +106,19 @@ export default function Modal({
     >
       <div
         ref={modalRef}
-        className={`bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full ${selectedSize} max-h-[90vh] flex flex-col overflow-hidden text-slate-100 transform transition-all`}
+        className={`bg-white border border-[#DFE6EE] rounded-xl shadow-xl w-full ${selectedSize} max-h-[90vh] flex flex-col overflow-hidden text-[#4B5D6B] transform transition-all`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby={description ? 'modal-desc' : undefined}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#DFE6EE] bg-white">
           <div>
-            <h2 id="modal-title" className="text-lg font-semibold text-white tracking-tight">
+            <h2 id="modal-title" className="text-lg font-semibold text-[#172B3A] tracking-tight">
               {title}
             </h2>
             {description && (
-              <p id="modal-desc" className="text-xs text-slate-400 mt-0.5">
+              <p id="modal-desc" className="text-xs text-[#617181] mt-0.5">
                 {description}
               </p>
             )}
@@ -126,13 +126,13 @@ export default function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-500"
+            className="p-1.5 text-[#617181] hover:text-[#172B3A] rounded-lg hover:bg-[#EDF4FB] transition cursor-pointer focus-visible:ring-2 focus-visible:ring-[#175DB5]"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5 bg-slate-900/95">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-5 bg-white">{children}</div>
       </div>
     </div>
   );

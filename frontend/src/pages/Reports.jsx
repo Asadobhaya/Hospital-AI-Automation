@@ -1,4 +1,4 @@
-// src/pages/Reports.jsx — Diagnostic Lab Reports & Cryptographic Token Access
+// src/pages/Reports.jsx — Diagnostic Lab Reports & Cryptographic Token Access (Medical Blue & White)
 import React, { useEffect, useState } from 'react';
 import {
   FileText,
@@ -17,6 +17,7 @@ import Pagination from '../components/Pagination';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { request, reportsAPI } from '../services/api';
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
@@ -49,22 +50,16 @@ export default function Reports() {
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const [repRes, patRes] = await Promise.all([
-        fetch(`/api/reports?${query.toString()}`, { credentials: 'include' }),
-        fetch('/api/patients?limit=50', { credentials: 'include' }),
+      const [repData, patData] = await Promise.all([
+        request(`/reports?${query.toString()}`),
+        request('/patients?limit=50'),
       ]);
 
-      if (repRes.ok) {
-        const json = await repRes.json();
-        setReports(json.data || []);
-        if (json.pagination) {
-          setTotalPages(json.pagination.totalPages || 1);
-        }
+      setReports(repData?.data || repData || []);
+      if (repData?.pagination) {
+        setTotalPages(repData.pagination.totalPages || 1);
       }
-      if (patRes.ok) {
-        const pjson = await patRes.json();
-        setPatients(pjson.data || []);
-      }
+      setPatients(patData?.data || patData || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,21 +77,16 @@ export default function Reports() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('/api/reports', {
+      await request('/reports', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+        body: {
           patientId: parseInt(reportForm.patientId, 10),
           reportType: reportForm.reportType,
           reportUrl: reportForm.reportUrl,
           doctorNotes: reportForm.doctorNotes,
           isCritical: reportForm.isCritical,
-        }),
+        },
       });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error?.message || json.message || 'Failed to issue report');
 
       setIsModalOpen(false);
       setReportForm({
@@ -108,7 +98,7 @@ export default function Reports() {
       });
       fetchReports();
     } catch (err) {
-      setModalError(err.message);
+      setModalError(err?.message || 'Failed to issue report');
     } finally {
       setSubmitting(false);
     }
@@ -117,30 +107,26 @@ export default function Reports() {
   const handleConfirmRevoke = async () => {
     if (!revokingReport) return;
     try {
-      const res = await fetch(`/api/reports/${revokingReport.id}/revoke`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        setRevokingReport(null);
-        fetchReports();
-      }
+      await reportsAPI.revoke(revokingReport.id);
+      setRevokingReport(null);
+      fetchReports();
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleCopyLink = (token) => {
-    const fullUrl = `${window.location.origin}/reports/view?token=${token}`;
+    const fullUrl = `${window.location.origin}/reports/view?token=${encodeURIComponent(token)}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedToken(token);
-    setTimeout(() => setCopiedToken(null), 2000);
+    setTimeout(() => setCopiedToken(null), 2500);
   };
 
-  const calculateDaysRemaining = (expiresAt) => {
-    const diff = new Date(expiresAt).getTime() - Date.now();
-    const days = Math.ceil(diff / (1000 * 3600 * 24));
-    return days > 0 ? `${days}d left` : 'Expired';
+  const calculateDaysRemaining = (expiryDate) => {
+    const diff = new Date(expiryDate) - new Date();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    if (days <= 0) return 'Expired';
+    return `${days}d remaining`;
   };
 
   return (
@@ -148,8 +134,8 @@ export default function Reports() {
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Diagnostic Lab Reports</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-[#172B3A] tracking-tight">Diagnostic Lab Reports</h1>
+          <p className="text-sm text-[#617181] mt-1">
             Automated delivery with 32-byte cryptographic tokens & 7-day auto-expiry
           </p>
         </div>
@@ -171,17 +157,17 @@ export default function Reports() {
       {/* Security Architecture Note */}
       <div className="card-surface p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary-500/10 text-primary-400 rounded-xl shrink-0" aria-hidden="true">
+          <div className="p-2.5 bg-[#E7F1FB] text-[#2F78C8] rounded-xl shrink-0" aria-hidden="true">
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-white">Cryptographic URL Tokenization Active</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-sm font-semibold text-[#172B3A]">Cryptographic URL Tokenization Active</h2>
+            <p className="text-xs text-[#617181]">
               Diagnostic tokens use Node.js crypto.randomBytes(32) — zero guessability or enumeration risks.
             </p>
           </div>
         </div>
-        <span className="text-xs font-medium text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full whitespace-nowrap">
+        <span className="text-xs font-semibold text-[#18794E] bg-[#E7F5EC] border border-[#18794E]/20 px-3 py-1 rounded-full whitespace-nowrap">
           Server-Side Expiry Guard
         </span>
       </div>
@@ -189,8 +175,8 @@ export default function Reports() {
       {/* Reports Table */}
       <section aria-label="Diagnostic Reports" className="card-surface rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400" role="status">
-            <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="p-12 text-center text-[#617181]" role="status">
+            <div className="w-8 h-8 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm">Fetching reports...</p>
           </div>
         ) : reports.length === 0 ? (
@@ -206,7 +192,7 @@ export default function Reports() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-[#DFE6EE] bg-[#F5F8FC] text-xs font-semibold text-[#172B3A] uppercase tracking-wider">
                   <th scope="col" className="py-3.5 px-5">Patient</th>
                   <th scope="col" className="py-3.5 px-5">Test / Report Type</th>
                   <th scope="col" className="py-3.5 px-5">Validity</th>
@@ -215,51 +201,51 @@ export default function Reports() {
                   <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-[#DFE6EE] text-sm">
                 {reports.map((r) => {
                   const isExpired = new Date() > new Date(r.expires_at);
                   const isRevoked = r.is_revoked;
 
                   return (
-                    <tr key={r.id} className="hover:bg-slate-800/40 transition">
+                    <tr key={r.id} className="hover:bg-[#EDF4FB] transition">
                       <td className="py-3.5 px-5">
-                        <div className="font-medium text-white">{r.patient?.name || `Patient #${r.patient_id}`}</div>
-                        <div className="text-xs font-mono text-slate-400">{r.patient?.phone || ''}</div>
+                        <div className="font-semibold text-[#172B3A]">{r.patient?.name || `Patient #${r.patient_id}`}</div>
+                        <div className="text-xs font-mono text-[#617181]">{r.patient?.phone || ''}</div>
                       </td>
                       <td className="py-3.5 px-5">
-                        <div className="font-medium text-slate-200 flex items-center gap-1.5">
+                        <div className="font-medium text-[#172B3A] flex items-center gap-1.5">
                           {r.is_critical && (
-                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" title="Critical Result" />
+                            <span className="w-2 h-2 rounded-full bg-[#B42318] animate-pulse" title="Critical Result" />
                           )}
                           <span>{r.report_type}</span>
                         </div>
                         {r.doctor_notes && (
-                          <div className="text-xs text-slate-400 truncate max-w-xs">{r.doctor_notes}</div>
+                          <div className="text-xs text-[#617181] truncate max-w-xs">{r.doctor_notes}</div>
                         )}
                       </td>
                       <td className="py-3.5 px-5 text-xs">
-                        <div className="flex items-center gap-1.5 text-slate-300">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                        <div className="flex items-center gap-1.5 text-[#4B5D6B]">
+                          <Clock className="w-3.5 h-3.5 text-[#617181]" aria-hidden="true" />
                           <span>{calculateDaysRemaining(r.expires_at)}</span>
                         </div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">
+                        <div className="text-[10px] text-[#8898AA] mt-0.5">
                           Expires: {new Date(r.expires_at).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="py-3.5 px-5 text-xs font-mono text-slate-300">
+                      <td className="py-3.5 px-5 text-xs font-mono text-[#4B5D6B]">
                         {r.access_count || 0} views
                       </td>
                       <td className="py-3.5 px-5">
                         {isRevoked ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-rose-400 font-medium">
+                          <span className="inline-flex items-center gap-1 text-xs text-[#B42318] bg-[#FDECEC] border border-[#B42318]/20 px-2.5 py-0.5 rounded-full font-semibold">
                             <ShieldX className="w-3.5 h-3.5" aria-hidden="true" /> Revoked
                           </span>
                         ) : isExpired ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-amber-400 font-medium">
+                          <span className="inline-flex items-center gap-1 text-xs text-[#8A4B08] bg-[#FFF2D8] border border-[#8A4B08]/20 px-2.5 py-0.5 rounded-full font-semibold">
                             <Clock className="w-3.5 h-3.5" aria-hidden="true" /> Expired
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
+                          <span className="inline-flex items-center gap-1 text-xs text-[#18794E] bg-[#E7F5EC] border border-[#18794E]/20 px-2.5 py-0.5 rounded-full font-semibold">
                             <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /> Active Link
                           </span>
                         )}
@@ -270,13 +256,13 @@ export default function Reports() {
                             <button
                               type="button"
                               onClick={() => handleCopyLink(r.access_token)}
-                              className="px-2.5 py-1 text-xs font-medium text-primary-400 hover:text-primary-300 bg-primary-500/10 hover:bg-primary-500/20 rounded-lg transition flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-primary-500"
+                              className="px-2.5 py-1 text-xs font-semibold text-[#2F78C8] hover:text-[#173A5E] bg-[#E7F1FB] hover:bg-[#D4E6F8] rounded-lg transition flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-[#175DB5] cursor-pointer"
                               title="Copy secure link"
                             >
                               {copiedToken === r.access_token ? (
                                 <>
-                                  <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                                  <span className="text-emerald-400">Copied</span>
+                                  <Check className="w-3.5 h-3.5 text-[#18794E]" aria-hidden="true" />
+                                  <span className="text-[#18794E]">Copied</span>
                                 </>
                               ) : (
                                 <>
@@ -290,7 +276,7 @@ export default function Reports() {
                             <button
                               type="button"
                               onClick={() => setRevokingReport(r)}
-                              className="px-2.5 py-1 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition focus-visible:ring-2 focus-visible:ring-rose-500"
+                              className="px-2.5 py-1 text-xs font-semibold text-[#B42318] hover:text-[#911b11] bg-[#FDECEC] hover:bg-[#FCD8D8] rounded-lg transition focus-visible:ring-2 focus-visible:ring-[#B42318] cursor-pointer"
                             >
                               Revoke
                             </button>
@@ -306,7 +292,7 @@ export default function Reports() {
         )}
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800">
+          <div className="p-4 border-t border-[#DFE6EE]">
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -328,13 +314,13 @@ export default function Reports() {
       >
         <form onSubmit={handleCreateReport} className="space-y-4">
           {modalError && (
-            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs">
+            <div role="alert" className="p-3 bg-[#FDECEC] border border-[#B42318]/30 rounded-xl text-[#B42318] text-xs">
               {modalError}
             </div>
           )}
 
           <div>
-            <label htmlFor="report-patient" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="report-patient" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Select Patient
             </label>
             <select
@@ -354,7 +340,7 @@ export default function Reports() {
           </div>
 
           <div>
-            <label htmlFor="report-type" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="report-type" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Diagnostic Test Category
             </label>
             <select
@@ -375,7 +361,7 @@ export default function Reports() {
           </div>
 
           <div>
-            <label htmlFor="report-url" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="report-url" className="block text-xs font-semibold text-[#172B3A] mb-1">
               PDF Document Storage URL
             </label>
             <input
@@ -390,7 +376,7 @@ export default function Reports() {
           </div>
 
           <div>
-            <label htmlFor="report-notes" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="report-notes" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Pathologist / Doctor Notes (Optional)
             </label>
             <textarea
@@ -409,14 +395,14 @@ export default function Reports() {
               type="checkbox"
               checked={reportForm.isCritical}
               onChange={(e) => setReportForm({ ...reportForm, isCritical: e.target.checked })}
-              className="rounded border-slate-700 bg-slate-900 text-rose-600 focus:ring-rose-500 w-4 h-4"
+              className="rounded border-[#DFE6EE] text-[#B42318] focus:ring-[#B42318] w-4 h-4 cursor-pointer"
             />
-            <label htmlFor="report-critical" className="text-xs font-medium text-rose-300">
+            <label htmlFor="report-critical" className="text-xs font-semibold text-[#B42318] cursor-pointer">
               Flag as Critical Result (Triggers urgent clinical escalation)
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DFE6EE]">
             <Button
               variant="outline"
               size="md"

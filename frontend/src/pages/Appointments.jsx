@@ -1,4 +1,4 @@
-// src/pages/Appointments.jsx — Appointment Scheduling & Lifecycle Management
+// src/pages/Appointments.jsx — Appointment Scheduling & Lifecycle Management (Medical Blue & White)
 import React, { useEffect, useState } from 'react';
 import {
   Calendar as CalendarIcon,
@@ -103,17 +103,13 @@ export default function Appointments() {
     setActionLoading(true);
 
     try {
-      const dateObj = new Date(`${bookingForm.slotDate}T${bookingForm.slotTime}:00`);
-      const fullSlotTime = isNaN(dateObj.getTime())
-        ? `${bookingForm.slotDate}T${bookingForm.slotTime}:00Z`
-        : dateObj.toISOString();
-
+      const slotTimeISO = `${bookingForm.slotDate}T${bookingForm.slotTime}:00`;
       await appointmentsAPI.create({
-        patientName: bookingForm.patientName.trim(),
-        patientPhone: bookingForm.patientPhone.trim(),
-        doctorId: parseInt(bookingForm.doctorId, 10),
-        slotTime: fullSlotTime,
-        notes: bookingForm.notes?.trim() || undefined,
+        patient_name: bookingForm.patientName.trim(),
+        patient_phone: bookingForm.patientPhone.trim(),
+        doctor_id: parseInt(bookingForm.doctorId, 10),
+        slot_time: slotTimeISO,
+        notes: bookingForm.notes.trim() || undefined,
       });
 
       setIsBookModalOpen(false);
@@ -127,7 +123,7 @@ export default function Appointments() {
       });
       fetchData();
     } catch (err) {
-      setActionError(err.message || 'Failed to book slot');
+      setActionError(err?.message || 'Booking failed. This doctor slot may already be reserved.');
     } finally {
       setActionLoading(false);
     }
@@ -140,21 +136,17 @@ export default function Appointments() {
     setActionLoading(true);
 
     try {
-      const dateObj = new Date(`${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00`);
-      const fullSlotTime = isNaN(dateObj.getTime())
-        ? `${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00Z`
-        : dateObj.toISOString();
-
+      const newSlotTimeISO = `${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00`;
       await appointmentsAPI.reschedule(selectedAppt.id, {
-        newSlotTime: fullSlotTime,
-        reason: rescheduleForm.reason?.trim() || undefined,
+        new_slot_time: newSlotTimeISO,
+        reason: rescheduleForm.reason.trim() || 'Staff requested reschedule',
       });
 
       setIsRescheduleModalOpen(false);
       setSelectedAppt(null);
       fetchData();
     } catch (err) {
-      setActionError(err.message || 'Rescheduling failed');
+      setActionError(err?.message || 'Failed to reschedule. Selected slot is unavailable.');
     } finally {
       setActionLoading(false);
     }
@@ -167,7 +159,7 @@ export default function Appointments() {
       setCancelDialogAppt(null);
       fetchData();
     } catch (err) {
-      alert(err.message || 'Cancellation failed');
+      console.error('Cancel appointment error:', err);
     }
   };
 
@@ -185,12 +177,12 @@ export default function Appointments() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Page Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Appointment Center</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Real-time doctor calendar, automated reminders & double-booking prevention
+          <h1 className="text-2xl font-bold text-[#172B3A] tracking-tight">Appointments & Scheduling</h1>
+          <p className="text-sm text-[#617181] mt-1">
+            Clinical slot allocation, real-time lifecycle tracking & automated reminders
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -214,7 +206,7 @@ export default function Appointments() {
         className="card-surface p-4 rounded-2xl flex flex-col md:flex-row gap-4 justify-between items-center"
       >
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8898AA]" aria-hidden="true" />
           <input
             id="appt-search"
             type="text"
@@ -231,7 +223,7 @@ export default function Appointments() {
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="flex items-center gap-2">
-            <label htmlFor="filter-status" className="text-xs text-slate-400 font-medium">
+            <label htmlFor="filter-status" className="text-xs text-[#617181] font-semibold">
               Status:
             </label>
             <select
@@ -253,7 +245,7 @@ export default function Appointments() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label htmlFor="filter-doctor" className="text-xs text-slate-400 font-medium">
+            <label htmlFor="filter-doctor" className="text-xs text-[#617181] font-semibold">
               Doctor:
             </label>
             <select
@@ -277,7 +269,7 @@ export default function Appointments() {
       </section>
 
       {error && (
-        <div role="alert" className="bg-rose-950/60 border border-rose-500/40 p-4 rounded-xl text-rose-200 text-sm">
+        <div role="alert" className="bg-[#FDECEC] border border-[#B42318]/30 p-4 rounded-xl text-[#B42318] text-sm">
           {error}
         </div>
       )}
@@ -285,8 +277,8 @@ export default function Appointments() {
       {/* Appointments List / Table */}
       <section aria-label="Appointments Table" className="card-surface rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400" role="status">
-            <div className="inline-block w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="p-12 text-center text-[#617181]" role="status">
+            <div className="inline-block w-8 h-8 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-sm">Retrieving real appointments from database...</p>
           </div>
         ) : appointments.length === 0 ? (
@@ -302,7 +294,7 @@ export default function Appointments() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-[#DFE6EE] bg-[#F5F8FC] text-xs font-semibold text-[#172B3A] uppercase tracking-wider">
                   <th scope="col" className="py-3.5 px-5">Patient</th>
                   <th scope="col" className="py-3.5 px-5">Doctor & Specialty</th>
                   <th scope="col" className="py-3.5 px-5">Slot Time</th>
@@ -311,7 +303,7 @@ export default function Appointments() {
                   <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-[#DFE6EE] text-sm">
                 {appointments.map((appt) => {
                   const { date, time } = formatSlotTime(appt.slot_time);
                   const patientName = appt.patient?.name || 'Patient';
@@ -320,25 +312,25 @@ export default function Appointments() {
                   const department = appt.doctor?.specialization || appt.doctor?.department || 'Clinical';
 
                   return (
-                    <tr key={appt.id} className="hover:bg-slate-800/40 transition">
+                    <tr key={appt.id} className="hover:bg-[#EDF4FB] transition">
                       <td className="py-3.5 px-5">
-                        <div className="font-medium text-white">{patientName}</div>
-                        <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3 h-3 text-slate-500" aria-hidden="true" />
+                        <div className="font-semibold text-[#172B3A]">{patientName}</div>
+                        <div className="text-xs text-[#617181] flex items-center gap-1 mt-0.5 font-mono">
+                          <Phone className="w-3 h-3 text-[#8898AA]" aria-hidden="true" />
                           <span>{patientPhone}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-5">
-                        <div className="font-medium text-slate-200">{doctorName}</div>
-                        <div className="text-xs text-primary-400">{department}</div>
+                        <div className="font-medium text-[#172B3A]">{doctorName}</div>
+                        <div className="text-xs text-[#2F78C8] font-medium">{department}</div>
                       </td>
                       <td className="py-3.5 px-5">
-                        <div className="font-medium text-white flex items-center gap-1.5">
-                          <CalendarIcon className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                        <div className="font-medium text-[#172B3A] flex items-center gap-1.5">
+                          <CalendarIcon className="w-3.5 h-3.5 text-[#617181]" aria-hidden="true" />
                           <span>{date}</span>
                         </div>
-                        <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                        <div className="text-xs text-[#617181] flex items-center gap-1.5 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-[#8898AA]" aria-hidden="true" />
                           <span>{time}</span>
                         </div>
                       </td>
@@ -347,12 +339,12 @@ export default function Appointments() {
                       </td>
                       <td className="py-3.5 px-5">
                         {appt.confirmed_via_call ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
+                          <span className="inline-flex items-center gap-1 text-xs text-[#18794E] bg-[#E7F5EC] border border-[#18794E]/20 px-2.5 py-0.5 rounded-full font-medium">
                             <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Confirmed
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-                            <Clock className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Pending Call
+                          <span className="inline-flex items-center gap-1 text-xs text-[#8A4B08] bg-[#FFF2D8] border border-[#8A4B08]/20 px-2.5 py-0.5 rounded-full font-medium">
+                            <Clock className="w-3.5 h-3.5" aria-hidden="true" /> Pending Call
                           </span>
                         )}
                       </td>
@@ -366,14 +358,14 @@ export default function Appointments() {
                                   setSelectedAppt(appt);
                                   setIsRescheduleModalOpen(true);
                                 }}
-                                className="px-3 py-1.5 text-xs font-medium text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition focus-visible:ring-2 focus-visible:ring-amber-500"
+                                className="px-3 py-1.5 text-xs font-semibold text-[#8A4B08] bg-[#FFF2D8] hover:bg-[#FFE3B0] rounded-lg transition focus-visible:ring-2 focus-visible:ring-[#8A4B08] cursor-pointer"
                               >
                                 Reschedule
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setCancelDialogAppt(appt)}
-                                className="px-3 py-1.5 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition focus-visible:ring-2 focus-visible:ring-rose-500"
+                                className="px-3 py-1.5 text-xs font-semibold text-[#B42318] bg-[#FDECEC] hover:bg-[#FCD8D8] rounded-lg transition focus-visible:ring-2 focus-visible:ring-[#B42318] cursor-pointer"
                               >
                                 Cancel
                               </button>
@@ -391,7 +383,7 @@ export default function Appointments() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800">
+          <div className="p-4 border-t border-[#DFE6EE]">
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -413,14 +405,14 @@ export default function Appointments() {
       >
         <form onSubmit={handleBookSubmit} className="space-y-4">
           {actionError && (
-            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs flex items-start gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <div role="alert" className="p-3 bg-[#FDECEC] border border-[#B42318]/30 rounded-xl text-[#B42318] text-xs flex items-start gap-2">
+              <ShieldAlert className="w-4 h-4 text-[#B42318] shrink-0 mt-0.5" aria-hidden="true" />
               <span>{actionError}</span>
             </div>
           )}
 
           <div>
-            <label htmlFor="book-patient-name" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="book-patient-name" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Patient Full Name
             </label>
             <input
@@ -435,7 +427,7 @@ export default function Appointments() {
           </div>
 
           <div>
-            <label htmlFor="book-patient-phone" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="book-patient-phone" className="block text-xs font-semibold text-[#172B3A] mb-1">
               WhatsApp / Mobile Phone (Pakistan: +92 / 03xx)
             </label>
             <input
@@ -450,7 +442,7 @@ export default function Appointments() {
           </div>
 
           <div>
-            <label htmlFor="book-doctor" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="book-doctor" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Select Doctor
             </label>
             <select
@@ -471,7 +463,7 @@ export default function Appointments() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="book-date" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="book-date" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 Date
               </label>
               <input
@@ -485,7 +477,7 @@ export default function Appointments() {
               />
             </div>
             <div>
-              <label htmlFor="book-time" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="book-time" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 Time (30m Slots)
               </label>
               <select
@@ -502,7 +494,7 @@ export default function Appointments() {
           </div>
 
           <div>
-            <label htmlFor="book-notes" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="book-notes" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Consultation Reason / Notes (Optional)
             </label>
             <textarea
@@ -515,7 +507,7 @@ export default function Appointments() {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DFE6EE]">
             <Button
               variant="outline"
               size="md"
@@ -548,20 +540,20 @@ export default function Appointments() {
       >
         <form onSubmit={handleRescheduleSubmit} className="space-y-4">
           {actionError && (
-            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs flex items-start gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <div role="alert" className="p-3 bg-[#FDECEC] border border-[#B42318]/30 rounded-xl text-[#B42318] text-xs flex items-start gap-2">
+              <ShieldAlert className="w-4 h-4 text-[#B42318] shrink-0 mt-0.5" aria-hidden="true" />
               <span>{actionError}</span>
             </div>
           )}
 
-          <div className="text-xs text-slate-300 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-            Current Booking: <strong className="text-white">{selectedAppt?.patient?.name}</strong> with <strong className="text-white">{selectedAppt?.doctor?.name}</strong> on{' '}
+          <div className="text-xs text-[#4B5D6B] p-3 bg-[#F5F8FC] rounded-xl border border-[#DFE6EE]">
+            Current Booking: <strong className="text-[#172B3A]">{selectedAppt?.patient?.name}</strong> with <strong className="text-[#172B3A]">{selectedAppt?.doctor?.name}</strong> on{' '}
             {selectedAppt && formatSlotTime(selectedAppt.slot_time).date} at {selectedAppt && formatSlotTime(selectedAppt.slot_time).time}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="resched-date" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="resched-date" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 New Date
               </label>
               <input
@@ -575,7 +567,7 @@ export default function Appointments() {
               />
             </div>
             <div>
-              <label htmlFor="resched-time" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="resched-time" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 New Slot Time
               </label>
               <select
@@ -592,7 +584,7 @@ export default function Appointments() {
           </div>
 
           <div>
-            <label htmlFor="resched-reason" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="resched-reason" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Reason for Reschedule
             </label>
             <input
@@ -605,7 +597,7 @@ export default function Appointments() {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DFE6EE]">
             <Button
               variant="outline"
               size="md"

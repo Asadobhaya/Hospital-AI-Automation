@@ -1,4 +1,4 @@
-// src/pages/Messages.jsx — 24x7 WhatsApp AI Patient Support & Human Takeover
+// src/pages/Messages.jsx — 24x7 WhatsApp AI Patient Support & Human Takeover (Medical Blue & White)
 import React, { useEffect, useState } from 'react';
 import {
   MessageSquare,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
+import { request } from '../services/api';
 
 export default function Messages() {
   const [conversations, setConversations] = useState([]);
@@ -34,14 +35,11 @@ export default function Messages() {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/messages/conversations', { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        const convos = json.data || [];
-        setConversations(convos);
-        if (convos.length > 0 && !selectedChat) {
-          setSelectedChat(convos[0]);
-        }
+      const res = await request('/messages/conversations');
+      const convos = res?.data || res || [];
+      setConversations(convos);
+      if (convos.length > 0 && !selectedChat) {
+        setSelectedChat(convos[0]);
       }
     } catch (err) {
       console.error(err);
@@ -54,11 +52,8 @@ export default function Messages() {
     if (!patientPhone) return;
     try {
       setMessagesLoading(true);
-      const res = await fetch(`/api/messages/${encodeURIComponent(patientPhone)}`, { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        setMessages(json.data || []);
-      }
+      const res = await request(`/messages/${encodeURIComponent(patientPhone)}`);
+      setMessages(res?.data || res || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,20 +77,16 @@ export default function Messages() {
     setSending(true);
 
     try {
-      const res = await fetch('/api/messages/staff-reply', {
+      await request('/messages/staff-reply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+        body: {
           patientPhone: selectedChat.patient_phone,
           message: replyText.trim(),
-        }),
+        },
       });
 
-      if (res.ok) {
-        setReplyText('');
-        fetchMessages(selectedChat.patient_phone);
-      }
+      setReplyText('');
+      fetchMessages(selectedChat.patient_phone);
     } catch (err) {
       console.error(err);
     } finally {
@@ -109,14 +100,11 @@ export default function Messages() {
     setSimulating(true);
 
     try {
-      const res = await fetch('/api/messages/ai-screen', {
+      const res = await request('/messages/ai-screen', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ text: testMessage }),
+        body: { text: testMessage },
       });
-      const json = await res.json();
-      setSimulationResult(json.data || json);
+      setSimulationResult(res?.data || res);
     } catch (err) {
       console.error(err);
     } finally {
@@ -135,9 +123,9 @@ export default function Messages() {
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">WhatsApp AI Patient Support</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Autonomous multi-lingual assistant (Hinglish/English), clinical boundary guardrails & staff override
+          <h1 className="text-2xl font-bold text-[#172B3A] tracking-tight">WhatsApp AI Patient Support</h1>
+          <p className="text-sm text-[#617181] mt-1">
+            Autonomous multi-lingual assistant (Urdu/English), clinical boundary guardrails & staff override
           </p>
         </div>
         <Button
@@ -157,9 +145,9 @@ export default function Messages() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[520px] lg:h-[620px]">
         {/* Left Conversations Sidebar */}
         <div className="h-64 lg:h-full lg:col-span-4 card-surface rounded-2xl flex flex-col overflow-hidden">
-          <div className="p-3.5 border-b border-slate-800 bg-slate-900/60">
+          <div className="p-3.5 border-b border-[#DFE6EE] bg-[#F5F8FC]">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8898AA]" aria-hidden="true" />
               <input
                 id="search-conversations"
                 type="text"
@@ -172,14 +160,14 @@ export default function Messages() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-800" role="tablist" aria-label="Patient conversations">
+          <div className="flex-1 overflow-y-auto divide-y divide-[#DFE6EE]" role="tablist" aria-label="Patient conversations">
             {loading ? (
-              <div className="p-6 text-center text-slate-400 text-xs" role="status">
-                <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <div className="p-6 text-center text-[#617181] text-xs" role="status">
+                <div className="w-6 h-6 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                 Loading conversations...
               </div>
             ) : filteredConversations.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-xs">
+              <div className="p-8 text-center text-[#8898AA] text-xs">
                 No active patient conversations found.
               </div>
             ) : (
@@ -192,22 +180,22 @@ export default function Messages() {
                     onClick={() => setSelectedChat(c)}
                     className={`w-full text-left p-3.5 transition flex items-start gap-3 cursor-pointer ${
                       isSelected
-                        ? 'bg-primary-600/15 border-l-4 border-primary-500'
-                        : 'hover:bg-slate-800/50 border-l-4 border-transparent'
+                        ? 'bg-[#E7F1FB] border-l-4 border-[#2F78C8]'
+                        : 'hover:bg-[#EDF4FB] border-l-4 border-transparent'
                     }`}
                   >
                     <div
-                      className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-200 font-bold text-xs shrink-0"
+                      className="w-9 h-9 rounded-full bg-[#E7F1FB] border border-[#DFE6EE] flex items-center justify-center text-[#2F78C8] font-bold text-xs shrink-0"
                       aria-hidden="true"
                     >
                       {(c.patient_name || 'P').charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-white text-xs truncate">
+                        <span className="font-semibold text-[#172B3A] text-xs truncate">
                           {c.patient_name || 'Patient'}
                         </span>
-                        <span className="text-[10px] text-slate-500 shrink-0">
+                        <span className="text-[10px] text-[#8898AA] shrink-0">
                           {c.last_message_at
                             ? new Date(c.last_message_at).toLocaleTimeString([], {
                                 hour: '2-digit',
@@ -216,10 +204,10 @@ export default function Messages() {
                             : ''}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400 font-mono truncate mt-0.5">
+                      <p className="text-[11px] text-[#617181] font-mono truncate mt-0.5">
                         {c.patient_phone}
                       </p>
-                      <p className="text-xs text-slate-300 truncate mt-1">
+                      <p className="text-xs text-[#4B5D6B] truncate mt-1">
                         {c.last_message_content || 'Recent interaction'}
                       </p>
                     </div>
@@ -235,35 +223,35 @@ export default function Messages() {
           {selectedChat ? (
             <>
               {/* Chat Thread Header */}
-              <div className="p-3.5 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+              <div className="p-3.5 border-b border-[#DFE6EE] bg-[#F5F8FC] flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-9 h-9 rounded-full bg-primary-600/20 text-primary-400 border border-primary-500/30 flex items-center justify-center font-bold text-xs"
+                    className="w-9 h-9 rounded-full bg-[#E7F1FB] text-[#2F78C8] border border-[#DFE6EE] flex items-center justify-center font-bold text-xs"
                     aria-hidden="true"
                   >
                     {(selectedChat.patient_name || 'P').charAt(0)}
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-white tracking-tight">
+                    <h2 className="text-sm font-semibold text-[#172B3A] tracking-tight">
                       {selectedChat.patient_name || 'Patient'}
                     </h2>
-                    <p className="text-xs text-slate-400 font-mono">{selectedChat.patient_phone}</p>
+                    <p className="text-xs text-[#617181] font-mono">{selectedChat.patient_phone}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-950/60 text-emerald-400 rounded-full text-[11px] font-medium border border-emerald-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
+                  <span className="flex items-center gap-1.5 px-3 py-1 bg-[#E7F5EC] text-[#18794E] rounded-full text-[11px] font-semibold border border-[#18794E]/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#18794E] animate-pulse" aria-hidden="true" />
                     AI Agent Active
                   </span>
                 </div>
               </div>
 
               {/* Message History Bubble Area */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-950/40">
+              <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#F5F8FC]/60">
                 {messagesLoading ? (
-                  <div className="p-8 text-center text-slate-400 text-xs">Loading message stream...</div>
+                  <div className="p-8 text-center text-[#617181] text-xs">Loading message stream...</div>
                 ) : messages.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 text-xs">
+                  <div className="p-8 text-center text-[#8898AA] text-xs">
                     No prior messages for this conversation.
                   </div>
                 ) : (
@@ -279,34 +267,34 @@ export default function Messages() {
                         <div className="flex items-center gap-1.5 mb-1 px-1">
                           {isInbound ? (
                             <>
-                              <User className="w-3 h-3 text-slate-400" aria-hidden="true" />
-                              <span className="text-[11px] font-medium text-slate-300">
+                              <User className="w-3 h-3 text-[#617181]" aria-hidden="true" />
+                              <span className="text-[11px] font-semibold text-[#172B3A]">
                                 {selectedChat.patient_name || 'Patient'}
                               </span>
                             </>
                           ) : isStaff ? (
                             <>
-                              <span className="text-[11px] font-medium text-amber-400">Clinic Staff (Manual)</span>
-                              <User className="w-3 h-3 text-amber-400" aria-hidden="true" />
+                              <span className="text-[11px] font-semibold text-[#8A4B08]">Clinic Staff (Manual)</span>
+                              <User className="w-3 h-3 text-[#8A4B08]" aria-hidden="true" />
                             </>
                           ) : (
                             <>
-                              <span className="text-[11px] font-medium text-primary-400">MediPulse AI Agent</span>
-                              <Bot className="w-3 h-3 text-primary-400" aria-hidden="true" />
+                              <span className="text-[11px] font-semibold text-[#2F78C8]">MediPulse AI Agent</span>
+                              <Bot className="w-3 h-3 text-[#2F78C8]" aria-hidden="true" />
                             </>
                           )}
-                          <span className="text-[10px] text-slate-500">
+                          <span className="text-[10px] text-[#8898AA]">
                             {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
 
                         <div
-                          className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed ${
+                          className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-sm ${
                             isInbound
-                              ? 'bg-slate-800 text-slate-100 rounded-tl-sm border border-slate-700'
+                              ? 'bg-white text-[#172B3A] rounded-tl-sm border border-[#DFE6EE]'
                               : isStaff
-                              ? 'bg-amber-950/70 text-amber-100 rounded-tr-sm border border-amber-600/30'
-                              : 'bg-primary-600/25 text-primary-100 rounded-tr-sm border border-primary-500/30'
+                              ? 'bg-[#FFF2D8] text-[#8A4B08] rounded-tr-sm border border-[#8A4B08]/20'
+                              : 'bg-[#E7F1FB] text-[#173A5E] rounded-tr-sm border border-[#2F78C8]/20'
                           }`}
                         >
                           {m.content}
@@ -318,7 +306,7 @@ export default function Messages() {
               </div>
 
               {/* Staff Reply Form */}
-              <form onSubmit={handleSendReply} className="p-3 border-t border-slate-800 bg-slate-900/60 flex gap-2">
+              <form onSubmit={handleSendReply} className="p-3 border-t border-[#DFE6EE] bg-white flex gap-2">
                 <input
                   id="staff-reply-input"
                   type="text"
@@ -354,10 +342,10 @@ export default function Messages() {
       {/* AI Safety Boundary & Triage Simulator Section */}
       <section aria-label="AI Safety Simulator" className="card-surface p-5 rounded-2xl">
         <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-4 h-4 text-primary-400" aria-hidden="true" />
-          <h2 className="text-sm font-semibold text-white tracking-tight">Clinical AI Safety & Guardrails Simulator</h2>
+          <Sparkles className="w-4 h-4 text-[#2F78C8]" aria-hidden="true" />
+          <h2 className="text-sm font-semibold text-[#172B3A] tracking-tight">Clinical AI Safety & Guardrails Simulator</h2>
         </div>
-        <p className="text-xs text-slate-400 mb-4">
+        <p className="text-xs text-[#617181] mb-4">
           Test incoming patient prompts against Gemini clinical boundary filters, prescription refusal safeguards, and emergency escalation routing.
         </p>
 
@@ -383,21 +371,21 @@ export default function Messages() {
         </form>
 
         {simulationResult && (
-          <div className="mt-4 p-4 bg-slate-950/70 border border-slate-800 rounded-xl space-y-3">
+          <div className="mt-4 p-4 bg-[#F5F8FC] border border-[#DFE6EE] rounded-xl space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-white">Simulation Outcome:</span>
+              <span className="font-semibold text-[#172B3A]">Simulation Outcome:</span>
               {simulationResult.escalated ? (
-                <span className="inline-flex items-center gap-1 text-rose-400 font-semibold">
+                <span className="inline-flex items-center gap-1 text-[#B42318] font-semibold bg-[#FDECEC] border border-[#B42318]/20 px-2.5 py-0.5 rounded-full">
                   <AlertTriangle className="w-4 h-4" aria-hidden="true" /> Emergency Escalation Triggered
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                <span className="inline-flex items-center gap-1 text-[#18794E] font-semibold bg-[#E7F5EC] border border-[#18794E]/20 px-2.5 py-0.5 rounded-full">
                   <CheckCircle className="w-4 h-4" aria-hidden="true" /> Handled by Standard Protocol
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-300 p-3 bg-slate-900 rounded-lg border border-slate-800">
-              <span className="text-slate-400 block mb-1 font-medium">AI Generated Response:</span>
+            <div className="text-xs text-[#4B5D6B] p-3 bg-white rounded-lg border border-[#DFE6EE]">
+              <span className="text-[#617181] block mb-1 font-semibold">AI Generated Response:</span>
               <p className="italic">{simulationResult.aiResponse || simulationResult.response}</p>
             </div>
           </div>

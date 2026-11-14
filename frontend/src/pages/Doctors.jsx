@@ -1,4 +1,4 @@
-// src/pages/Doctors.jsx — Doctor Directory & Schedule Configuration
+// src/pages/Doctors.jsx — Doctor Directory & Schedule Configuration (Medical Blue & White)
 import React, { useEffect, useState } from 'react';
 import {
   Stethoscope,
@@ -109,7 +109,7 @@ export default function Doctors() {
       });
       fetchData();
     } catch (err) {
-      setModalError(err.message || 'Failed to register doctor');
+      setModalError(err?.message || 'Failed to register physician.');
     } finally {
       setSubmitting(false);
     }
@@ -129,8 +129,8 @@ export default function Doctors() {
       {/* Page Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Physicians & Scheduling</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-[#172B3A] tracking-tight">Physicians & Scheduling</h1>
+          <p className="text-sm text-[#617181] mt-1">
             Active medical practitioners, clinical consulting hours & department rosters
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function Doctors() {
         className="card-surface p-4 rounded-2xl flex flex-col sm:flex-row gap-4 justify-between items-center"
       >
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8898AA]" aria-hidden="true" />
           <input
             id="doctor-search"
             type="text"
@@ -168,7 +168,7 @@ export default function Doctors() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label htmlFor="dept-filter" className="text-xs text-slate-400 font-medium">
+          <label htmlFor="dept-filter" className="text-xs text-[#617181] font-semibold">
             Department:
           </label>
           <select
@@ -189,8 +189,8 @@ export default function Doctors() {
 
       {/* Doctors Grid */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400" role="status">
-          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="p-12 text-center text-[#617181]" role="status">
+          <div className="w-8 h-8 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm">Loading doctors roster...</p>
         </div>
       ) : filteredDoctors.length === 0 ? (
@@ -213,52 +213,52 @@ export default function Doctors() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-11 h-11 rounded-xl bg-primary-600/20 text-primary-400 border border-primary-500/30 flex items-center justify-center font-bold text-sm"
+                      className="w-11 h-11 rounded-xl bg-[#E7F1FB] text-[#2F78C8] border border-[#DFE6EE] flex items-center justify-center font-bold text-sm"
                       aria-hidden="true"
                     >
                       {doc.name.replace('Dr. ', '').charAt(0)}
                     </div>
                     <div>
-                      <h2 className="font-semibold text-white text-base tracking-tight">{doc.name}</h2>
-                      <p className="text-xs text-primary-400 font-medium">{doc.specialization || 'Clinical Specialist'}</p>
+                      <h2 className="font-semibold text-[#172B3A] text-base tracking-tight">{doc.name}</h2>
+                      <p className="text-xs text-[#2F78C8] font-semibold">{doc.specialization || 'Clinical Specialist'}</p>
                     </div>
                   </div>
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                       doc.is_active
-                        ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-400 border-slate-700'
+                        ? 'bg-[#E7F5EC] text-[#18794E] border-[#18794E]/30'
+                        : 'bg-[#F5F8FC] text-[#617181] border-[#DFE6EE]'
                     }`}
                   >
                     {doc.is_active ? 'On Duty' : 'Away'}
                   </span>
                 </div>
 
-                <div className="mt-4 space-y-2 text-xs text-slate-300">
+                <div className="mt-4 space-y-2 text-xs text-[#4B5D6B]">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+                    <Clock className="w-3.5 h-3.5 text-[#617181] shrink-0" aria-hidden="true" />
                     <span>
-                      Hours: <strong className="text-white">{doc.start_time} - {doc.end_time}</strong> ({doc.slot_duration_minutes || 30}m slots)
+                      Hours: <strong className="text-[#172B3A]">{doc.start_time} - {doc.end_time}</strong> ({doc.slot_duration_minutes || 30}m slots)
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+                    <Calendar className="w-3.5 h-3.5 text-[#617181] shrink-0" aria-hidden="true" />
                     <span className="truncate">
                       Days: {Array.isArray(doc.available_days) ? doc.available_days.join(', ') : 'Mon - Sat'}
                     </span>
                   </div>
                   {doc.phone && (
-                    <div className="flex items-center gap-2 text-slate-400 font-mono text-[11px]">
-                      <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" aria-hidden="true" />
+                    <div className="flex items-center gap-2 text-[#617181] font-mono text-[11px]">
+                      <Phone className="w-3.5 h-3.5 text-[#8898AA] shrink-0" aria-hidden="true" />
                       <span>{doc.phone}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-400">Department #{doc.department_id || 'General'}</span>
-                <span className="text-emerald-400 font-medium flex items-center gap-1">
+              <div className="mt-5 pt-3 border-t border-[#DFE6EE] flex items-center justify-between text-xs">
+                <span className="text-[#617181]">Department #{doc.department_id || 'General'}</span>
+                <span className="text-[#18794E] font-semibold flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" /> Verified Staff
                 </span>
               </div>
@@ -279,13 +279,13 @@ export default function Doctors() {
       >
         <form onSubmit={handleCreateDoctor} className="space-y-4">
           {modalError && (
-            <div role="alert" className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-200 text-xs">
+            <div role="alert" className="p-3 bg-[#FDECEC] border border-[#B42318]/30 rounded-xl text-[#B42318] text-xs">
               {modalError}
             </div>
           )}
 
           <div>
-            <label htmlFor="doc-name" className="block text-xs font-medium text-slate-300 mb-1">
+            <label htmlFor="doc-name" className="block text-xs font-semibold text-[#172B3A] mb-1">
               Doctor Full Name
             </label>
             <input
@@ -301,7 +301,7 @@ export default function Doctors() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="doc-dept" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="doc-dept" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 Department
               </label>
               <select
@@ -320,7 +320,7 @@ export default function Doctors() {
               </select>
             </div>
             <div>
-              <label htmlFor="doc-spec" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="doc-spec" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 Specialization / Qualification
               </label>
               <input
@@ -337,7 +337,36 @@ export default function Doctors() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="doc-start" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="doc-phone" className="block text-xs font-semibold text-[#172B3A] mb-1">
+                Doctor Phone (Pakistan: +92 / 03xx)
+              </label>
+              <input
+                id="doc-phone"
+                type="text"
+                placeholder="+923001234567"
+                value={doctorForm.phone}
+                onChange={(e) => setDoctorForm({ ...doctorForm, phone: e.target.value })}
+                className="form-input"
+              />
+            </div>
+            <div>
+              <label htmlFor="doc-email" className="block text-xs font-semibold text-[#172B3A] mb-1">
+                Doctor Email
+              </label>
+              <input
+                id="doc-email"
+                type="email"
+                placeholder="doctor@hospital.test"
+                value={doctorForm.email}
+                onChange={(e) => setDoctorForm({ ...doctorForm, email: e.target.value })}
+                className="form-input"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="doc-start" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 Shift Start Time
               </label>
               <input
@@ -350,7 +379,7 @@ export default function Doctors() {
               />
             </div>
             <div>
-              <label htmlFor="doc-end" className="block text-xs font-medium text-slate-300 mb-1">
+              <label htmlFor="doc-end" className="block text-xs font-semibold text-[#172B3A] mb-1">
                 Shift End Time
               </label>
               <input
@@ -364,7 +393,7 @@ export default function Doctors() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DFE6EE]">
             <Button
               variant="outline"
               size="md"

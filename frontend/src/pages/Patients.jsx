@@ -1,4 +1,4 @@
-// src/pages/Patients.jsx — Patient Directory & Medical History
+// src/pages/Patients.jsx — Patient Directory & Medical History (Medical Blue & White)
 import React, { useEffect, useState } from 'react';
 import {
   Users,
@@ -6,7 +6,6 @@ import {
   Phone,
   Calendar,
   FileText,
-  MessageSquare,
   Clock,
   UserCheck,
 } from 'lucide-react';
@@ -15,6 +14,7 @@ import Pagination from '../components/Pagination';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
 import StatusBadge from '../components/StatusBadge';
+import { patientsAPI } from '../services/api';
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -29,17 +29,15 @@ export default function Patients() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const query = new URLSearchParams({
+      const params = {
         page: page.toString(),
         limit: '15',
         ...(searchTerm && { search: searchTerm }),
-      });
-      const res = await fetch(`/api/patients?${query.toString()}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to load patients');
-      const data = await res.json();
-      setPatients(data.data || []);
-      if (data.pagination) {
-        setTotalPages(data.pagination.totalPages || 1);
+      };
+      const res = await patientsAPI.list(params);
+      setPatients(res?.data || res || []);
+      if (res?.pagination) {
+        setTotalPages(res.pagination.totalPages || 1);
       }
     } catch (err) {
       console.error(err);
@@ -56,10 +54,8 @@ export default function Patients() {
     setSelectedPatient(patient);
     setHistoryLoading(true);
     try {
-      const res = await fetch(`/api/patients/${patient.id}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch patient history');
-      const json = await res.json();
-      setPatientHistory(json.data || {});
+      const res = await patientsAPI.getById(patient.id);
+      setPatientHistory(res?.data || res || {});
     } catch (err) {
       console.error(err);
     } finally {
@@ -72,8 +68,8 @@ export default function Patients() {
       {/* Page Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Patient Directory</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-[#172B3A] tracking-tight">Patient Directory</h1>
+          <p className="text-sm text-[#617181] mt-1">
             Verified patient records, contact identifiers & longitudinal visit history
           </p>
         </div>
@@ -85,7 +81,7 @@ export default function Patients() {
         className="card-surface p-4 rounded-2xl flex items-center"
       >
         <div className="relative w-full max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8898AA]" aria-hidden="true" />
           <input
             id="patient-search"
             type="text"
@@ -104,8 +100,8 @@ export default function Patients() {
       {/* Patient Cards / Table */}
       <section aria-label="Patients Table" className="card-surface rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400" role="status">
-            <div className="inline-block w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="p-12 text-center text-[#617181]" role="status">
+            <div className="inline-block w-8 h-8 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-sm">Loading patient records...</p>
           </div>
         ) : patients.length === 0 ? (
@@ -118,7 +114,7 @@ export default function Patients() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[650px]">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-[#DFE6EE] bg-[#F5F8FC] text-xs font-semibold text-[#172B3A] uppercase tracking-wider">
                   <th scope="col" className="py-3.5 px-5">Patient Name</th>
                   <th scope="col" className="py-3.5 px-5">Phone Number</th>
                   <th scope="col" className="py-3.5 px-5">Last Inbound Contact</th>
@@ -126,26 +122,26 @@ export default function Patients() {
                   <th scope="col" className="py-3.5 px-5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-[#DFE6EE] text-sm">
                 {patients.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-800/40 transition">
-                    <td className="py-3.5 px-5 font-medium text-white flex items-center gap-3">
+                  <tr key={p.id} className="hover:bg-[#EDF4FB] transition">
+                    <td className="py-3.5 px-5 font-semibold text-[#172B3A] flex items-center gap-3">
                       <div
-                        className="w-8 h-8 rounded-full bg-primary-600/20 text-primary-400 border border-primary-500/30 flex items-center justify-center font-bold text-xs shrink-0"
+                        className="w-8 h-8 rounded-full bg-[#E7F1FB] text-[#2F78C8] border border-[#DFE6EE] flex items-center justify-center font-bold text-xs shrink-0"
                         aria-hidden="true"
                       >
                         {p.name.charAt(0)}
                       </div>
                       <span className="truncate">{p.name}</span>
                     </td>
-                    <td className="py-3.5 px-5 text-slate-300 font-mono text-xs">
+                    <td className="py-3.5 px-5 text-[#617181] font-mono text-xs">
                       {p.phone}
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-slate-400">
+                    <td className="py-3.5 px-5 text-xs text-[#617181]">
                       {p.last_message_at ? new Date(p.last_message_at).toLocaleString() : 'Registered via Booking'}
                     </td>
                     <td className="py-3.5 px-5">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E7F5EC] text-[#18794E] border border-[#18794E]/20">
                         <UserCheck className="w-3.5 h-3.5" aria-hidden="true" />
                         <span>Active</span>
                       </span>
@@ -167,7 +163,7 @@ export default function Patients() {
         )}
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800">
+          <div className="p-4 border-t border-[#DFE6EE]">
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -189,27 +185,27 @@ export default function Patients() {
         size="lg"
       >
         {historyLoading ? (
-          <div className="p-10 text-center text-slate-400" role="status">
-            <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <div className="p-10 text-center text-[#617181]" role="status">
+            <div className="w-6 h-6 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             <p className="text-xs">Fetching clinical history...</p>
           </div>
         ) : (
           <div className="space-y-5 text-sm">
-            <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 flex flex-wrap justify-between items-center gap-2 text-xs">
+            <div className="p-3.5 bg-[#F5F8FC] rounded-xl border border-[#DFE6EE] flex flex-wrap justify-between items-center gap-2 text-xs">
               <div>
-                <span className="text-slate-400">Verified Contact:</span>{' '}
-                <strong className="text-white font-mono">{selectedPatient?.phone}</strong>
+                <span className="text-[#617181]">Verified Contact:</span>{' '}
+                <strong className="text-[#172B3A] font-mono">{selectedPatient?.phone}</strong>
               </div>
               <div>
-                <span className="text-slate-400">Record ID:</span>{' '}
-                <strong className="text-primary-400 font-mono">#{selectedPatient?.id}</strong>
+                <span className="text-[#617181]">Record ID:</span>{' '}
+                <strong className="text-[#2F78C8] font-mono">#{selectedPatient?.id}</strong>
               </div>
             </div>
 
             {/* Appointments */}
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-primary-400" aria-hidden="true" />
+              <h3 className="text-xs font-semibold text-[#172B3A] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#2F78C8]" aria-hidden="true" />
                 Appointment History
               </h3>
               {patientHistory?.appointments?.length > 0 ? (
@@ -217,18 +213,18 @@ export default function Patients() {
                   {patientHistory.appointments.map((a) => (
                     <div
                       key={a.id}
-                      className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs flex justify-between items-center"
+                      className="p-3 bg-[#F5F8FC] rounded-xl border border-[#DFE6EE] text-xs flex justify-between items-center"
                     >
                       <div>
-                        <div className="font-medium text-white">{a.doctor?.name || `Doctor #${a.doctor_id}`}</div>
-                        <div className="text-slate-400 mt-0.5">{new Date(a.slot_time).toLocaleString()}</div>
+                        <div className="font-semibold text-[#172B3A]">{a.doctor?.name || `Doctor #${a.doctor_id}`}</div>
+                        <div className="text-[#617181] mt-0.5">{new Date(a.slot_time).toLocaleString()}</div>
                       </div>
                       <StatusBadge status={a.status} />
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic p-3 bg-slate-950/40 rounded-xl border border-slate-850">
+                <p className="text-xs text-[#8898AA] italic p-3 bg-[#F5F8FC] rounded-xl border border-[#DFE6EE]">
                   No appointments recorded for this patient.
                 </p>
               )}
@@ -236,8 +232,8 @@ export default function Patients() {
 
             {/* Diagnostic Reports */}
             <div>
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" />
+              <h3 className="text-xs font-semibold text-[#172B3A] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-[#2458A6]" aria-hidden="true" />
                 Diagnostic Lab Reports
               </h3>
               {patientHistory?.reports?.length > 0 ? (
@@ -245,18 +241,18 @@ export default function Patients() {
                   {patientHistory.reports.map((r) => (
                     <div
                       key={r.id}
-                      className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs flex justify-between items-center"
+                      className="p-3 bg-[#F5F8FC] rounded-xl border border-[#DFE6EE] text-xs flex justify-between items-center"
                     >
                       <div>
-                        <div className="font-medium text-white">{r.report_type}</div>
-                        <div className="text-slate-400 mt-0.5">{new Date(r.created_at).toLocaleDateString()}</div>
+                        <div className="font-semibold text-[#172B3A]">{r.report_type}</div>
+                        <div className="text-[#617181] mt-0.5">{new Date(r.created_at).toLocaleDateString()}</div>
                       </div>
                       <StatusBadge status={r.is_critical ? 'critical' : 'normal'} />
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic p-3 bg-slate-950/40 rounded-xl border border-slate-850">
+                <p className="text-xs text-[#8898AA] italic p-3 bg-[#F5F8FC] rounded-xl border border-[#DFE6EE]">
                   No lab reports generated for this patient.
                 </p>
               )}

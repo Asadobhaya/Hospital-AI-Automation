@@ -3,9 +3,9 @@ rawBase = rawBase.replace(/\/+$/, '');
 if (!rawBase.endsWith('/api') && rawBase !== '/api') {
   rawBase = `${rawBase}/api`;
 }
-const API_BASE = rawBase;
+export const API_BASE = rawBase;
 
-async function request(endpoint, options = {}) {
+export async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   const token = typeof window !== 'undefined' ? localStorage.getItem('hospital_token') : null;
   const config = {

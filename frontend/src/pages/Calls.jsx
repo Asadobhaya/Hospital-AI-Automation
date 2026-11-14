@@ -1,4 +1,4 @@
-// src/pages/Calls.jsx — Outbound AI Voice Reminders & Webhook Logs
+// src/pages/Calls.jsx — Outbound AI Voice Reminders & Webhook Logs (Medical Blue & White)
 import React, { useEffect, useState } from 'react';
 import {
   PhoneCall,
@@ -9,6 +9,7 @@ import StatusBadge from '../components/StatusBadge';
 import Pagination from '../components/Pagination';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
+import { request, callsAPI } from '../services/api';
 
 export default function Calls() {
   const [calls, setCalls] = useState([]);
@@ -28,21 +29,18 @@ export default function Calls() {
         ...(outcomeFilter !== 'all' && { outcome: outcomeFilter }),
       });
 
-      const res = await fetch(`/api/calls?${query.toString()}`, { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        const callLogs = json.data || [];
-        setCalls(callLogs);
-        if (json.pagination) {
-          setTotalPages(json.pagination.totalPages || 1);
-        }
-
-        // Aggregate stats
-        const confirmed = callLogs.filter((c) => c.outcome === 'confirmed').length;
-        const reschedule = callLogs.filter((c) => c.outcome === 'reschedule_requested').length;
-        const failed = callLogs.filter((c) => c.outcome === 'failed' || c.outcome === 'no_answer').length;
-        setStats({ total: callLogs.length, confirmed, reschedule, failed });
+      const res = await request(`/calls?${query.toString()}`);
+      const callLogs = res?.data || res || [];
+      setCalls(callLogs);
+      if (res?.pagination) {
+        setTotalPages(res.pagination.totalPages || 1);
       }
+
+      // Aggregate stats
+      const confirmed = callLogs.filter((c) => c.outcome === 'confirmed').length;
+      const reschedule = callLogs.filter((c) => c.outcome === 'reschedule_requested').length;
+      const failed = callLogs.filter((c) => c.outcome === 'failed' || c.outcome === 'no_answer').length;
+      setStats({ total: callLogs.length, confirmed, reschedule, failed });
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,13 +55,8 @@ export default function Calls() {
   const handleManualRetry = async (callId) => {
     setRetryingId(callId);
     try {
-      const res = await fetch(`/api/calls/${callId}/retry`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        fetchCalls();
-      }
+      await callsAPI.retry(callId);
+      fetchCalls();
     } catch (err) {
       console.error(err);
     } finally {
@@ -76,8 +69,8 @@ export default function Calls() {
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">AI Outbound Voice Gateway</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-[#172B3A] tracking-tight">AI Outbound Voice Gateway</h1>
+          <p className="text-sm text-[#617181] mt-1">
             Autonomous reminder calls, conversational webhook responses & automated retry logic
           </p>
         </div>
@@ -89,20 +82,20 @@ export default function Calls() {
       {/* Metric Cards */}
       <section aria-label="Voice Call Summary Metrics" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <article className="card-surface p-5 rounded-2xl">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Calls Dispatched</h2>
-          <div className="text-3xl font-bold text-white tracking-tight mt-2">{stats.total}</div>
+          <h2 className="text-xs font-semibold text-[#617181] uppercase tracking-wider">Total Calls Dispatched</h2>
+          <div className="text-3xl font-bold text-[#172B3A] tracking-tight mt-2">{stats.total}</div>
         </article>
         <article className="card-surface p-5 rounded-2xl">
-          <h2 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Confirmed Attendance</h2>
-          <div className="text-3xl font-bold text-emerald-400 tracking-tight mt-2">{stats.confirmed}</div>
+          <h2 className="text-xs font-semibold text-[#18794E] uppercase tracking-wider">Confirmed Attendance</h2>
+          <div className="text-3xl font-bold text-[#18794E] tracking-tight mt-2">{stats.confirmed}</div>
         </article>
         <article className="card-surface p-5 rounded-2xl">
-          <h2 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Reschedules Requested</h2>
-          <div className="text-3xl font-bold text-amber-400 tracking-tight mt-2">{stats.reschedule}</div>
+          <h2 className="text-xs font-semibold text-[#8A4B08] uppercase tracking-wider">Reschedules Requested</h2>
+          <div className="text-3xl font-bold text-[#8A4B08] tracking-tight mt-2">{stats.reschedule}</div>
         </article>
         <article className="card-surface p-5 rounded-2xl">
-          <h2 className="text-xs font-semibold text-rose-400 uppercase tracking-wider">No Answer / Failed</h2>
-          <div className="text-3xl font-bold text-rose-400 tracking-tight mt-2">{stats.failed}</div>
+          <h2 className="text-xs font-semibold text-[#B42318] uppercase tracking-wider">No Answer / Failed</h2>
+          <div className="text-3xl font-bold text-[#B42318] tracking-tight mt-2">{stats.failed}</div>
         </article>
       </section>
 
@@ -112,7 +105,7 @@ export default function Calls() {
         className="card-surface p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-2">
-          <label htmlFor="outcome-filter" className="text-xs text-slate-400 font-medium">
+          <label htmlFor="outcome-filter" className="text-xs text-[#617181] font-semibold">
             Filter by Outcome:
           </label>
           <select
@@ -132,14 +125,14 @@ export default function Calls() {
             <option value="failed">Failed</option>
           </select>
         </div>
-        <span className="text-xs text-slate-400 font-mono">HMAC-SHA256 Protected Webhooks</span>
+        <span className="text-xs text-[#617181] font-mono">HMAC-SHA256 Protected Webhooks</span>
       </section>
 
       {/* Calls Table */}
       <section aria-label="Voice Call Records" className="card-surface rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400" role="status">
-            <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="p-12 text-center text-[#617181]" role="status">
+            <div className="w-8 h-8 border-2 border-[#2F78C8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm">Fetching call records...</p>
           </div>
         ) : calls.length === 0 ? (
@@ -152,7 +145,7 @@ export default function Calls() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-[#DFE6EE] bg-[#F5F8FC] text-xs font-semibold text-[#172B3A] uppercase tracking-wider">
                   <th scope="col" className="py-3.5 px-5">Patient / Phone</th>
                   <th scope="col" className="py-3.5 px-5">Trigger Type</th>
                   <th scope="col" className="py-3.5 px-5">Duration</th>
@@ -162,26 +155,26 @@ export default function Calls() {
                   <th scope="col" className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-[#DFE6EE] text-sm">
                 {calls.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-800/40 transition">
+                  <tr key={c.id} className="hover:bg-[#EDF4FB] transition">
                     <td className="py-3.5 px-5">
-                      <div className="font-medium text-white">{c.patient_name || 'Patient'}</div>
-                      <div className="text-xs font-mono text-slate-400">{c.patient_phone}</div>
+                      <div className="font-semibold text-[#172B3A]">{c.patient_name || 'Patient'}</div>
+                      <div className="text-xs font-mono text-[#617181]">{c.patient_phone}</div>
                     </td>
                     <td className="py-3.5 px-5">
-                      <span className="text-xs text-slate-300 capitalize">{c.trigger_type || '24h Reminder'}</span>
+                      <span className="text-xs text-[#4B5D6B] capitalize">{c.trigger_type || '24h Reminder'}</span>
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-slate-300">
+                    <td className="py-3.5 px-5 text-xs text-[#4B5D6B]">
                       {c.duration_seconds ? `${c.duration_seconds}s` : '0s'}
                     </td>
                     <td className="py-3.5 px-5">
                       <StatusBadge status={c.outcome || c.status} />
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-slate-300 max-w-xs truncate">
+                    <td className="py-3.5 px-5 text-xs text-[#4B5D6B] max-w-xs truncate">
                       {c.transcript_summary || 'Autonomous voice interaction completed.'}
                     </td>
-                    <td className="py-3.5 px-5 text-xs text-slate-400">
+                    <td className="py-3.5 px-5 text-xs text-[#617181]">
                       {new Date(c.created_at).toLocaleString()}
                     </td>
                     <td className="py-3.5 px-5 text-right">
@@ -190,7 +183,7 @@ export default function Calls() {
                           type="button"
                           onClick={() => handleManualRetry(c.id)}
                           disabled={retryingId === c.id}
-                          className="px-3 py-1.5 text-xs font-medium text-primary-400 hover:text-primary-300 hover:bg-primary-500/10 rounded-lg flex items-center gap-1.5 ml-auto transition cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary-500"
+                          className="px-3 py-1.5 text-xs font-semibold text-[#2F78C8] hover:text-[#173A5E] bg-[#E7F1FB] hover:bg-[#D4E6F8] rounded-lg flex items-center gap-1.5 ml-auto transition cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#175DB5]"
                         >
                           <RotateCcw className={`w-3.5 h-3.5 ${retryingId === c.id ? 'animate-spin' : ''}`} aria-hidden="true" />
                           <span>Retry Call</span>
@@ -205,7 +198,7 @@ export default function Calls() {
         )}
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800">
+          <div className="p-4 border-t border-[#DFE6EE]">
             <Pagination
               page={page}
               totalPages={totalPages}
