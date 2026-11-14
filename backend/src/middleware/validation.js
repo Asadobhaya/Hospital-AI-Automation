@@ -47,6 +47,19 @@ function sanitizeRequest(req, res, next) {
  */
 function validateBody(schema) {
   return (req, res, next) => {
+    if (req.body && typeof req.body === 'object') {
+      // Normalize snake_case to camelCase for payload resilience
+      if (req.body.patient_phone && !req.body.patientPhone) req.body.patientPhone = req.body.patient_phone;
+      if (req.body.patient_name && !req.body.patientName) req.body.patientName = req.body.patient_name;
+      if (req.body.doctor_id && !req.body.doctorId) req.body.doctorId = req.body.doctor_id;
+      if (req.body.slot_time && !req.body.slotTime) req.body.slotTime = req.body.slot_time;
+      if (req.body.new_slot_time && !req.body.newSlotTime) req.body.newSlotTime = req.body.new_slot_time;
+      if (req.body.patient_id && !req.body.patientId) req.body.patientId = req.body.patient_id;
+      if (req.body.report_type && !req.body.reportType) req.body.reportType = req.body.report_type;
+      if (req.body.report_url && !req.body.reportUrl) req.body.reportUrl = req.body.report_url;
+      if (req.body.doctor_notes && !req.body.doctorNotes) req.body.doctorNotes = req.body.doctor_notes;
+    }
+
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true, // Drop unexpected fields to prevent mass-assignment
@@ -126,7 +139,7 @@ const schemas = {
     department: Joi.string().min(2).max(100).optional(),
     department_id: Joi.number().integer().positive().optional(),
     fee: Joi.number().min(0).max(50000).default(500),
-    phone: Joi.string().pattern(/^\+?[1-9]\d{6,14}$/).allow('', null).optional(),
+    phone: Joi.string().pattern(/^(\+92|92|0)?3[0-9]{9}$|^\+?[1-9]\d{6,14}$/).allow('', null).optional(),
     email: Joi.string().email({ tlds: { allow: false } }).allow('', null).optional(),
     qualification: Joi.string().max(100).allow('', null).optional(),
     start_time: Joi.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).default('09:00'),

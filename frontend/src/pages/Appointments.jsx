@@ -105,8 +105,12 @@ export default function Appointments() {
     try {
       const slotTimeISO = `${bookingForm.slotDate}T${bookingForm.slotTime}:00`;
       await appointmentsAPI.create({
-        patient_name: bookingForm.patientName.trim(),
+        patientPhone: bookingForm.patientPhone.trim(),
+        patientName: bookingForm.patientName.trim(),
+        doctorId: parseInt(bookingForm.doctorId, 10),
+        slotTime: slotTimeISO,
         patient_phone: bookingForm.patientPhone.trim(),
+        patient_name: bookingForm.patientName.trim(),
         doctor_id: parseInt(bookingForm.doctorId, 10),
         slot_time: slotTimeISO,
         notes: bookingForm.notes.trim() || undefined,
@@ -138,6 +142,7 @@ export default function Appointments() {
     try {
       const newSlotTimeISO = `${rescheduleForm.slotDate}T${rescheduleForm.slotTime}:00`;
       await appointmentsAPI.reschedule(selectedAppt.id, {
+        newSlotTime: newSlotTimeISO,
         new_slot_time: newSlotTimeISO,
         reason: rescheduleForm.reason.trim() || 'Staff requested reschedule',
       });
