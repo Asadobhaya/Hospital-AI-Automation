@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://hospital-ai-backend-10uv.onrender.com/api/$1"
+      "destination": "https://hospital-ai-backend-t9gr.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",
