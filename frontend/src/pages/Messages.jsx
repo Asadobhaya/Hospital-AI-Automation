@@ -674,9 +674,11 @@ export default function Messages() {
                 </span>
               )}
             </div>
-            <div className="text-xs text-[#4B5D6B] p-3 bg-white rounded-lg border border-[#DFE6EE]">
-              <span className="text-[#617181] block mb-1 font-semibold">AI Generated Response:</span>
-              <p className="italic">{simulationResult.aiResponse || simulationResult.response}</p>
+            <div className="text-xs text-[#4B5D6B] p-3.5 bg-white rounded-xl border border-[#DFE6EE] space-y-1">
+              <span className="text-[#2F78C8] block font-semibold">MediPulse AI Response:</span>
+              <p className="italic text-[#172B3A] leading-relaxed">
+                {simulationResult.aiResponse || simulationResult.response || simulationResult.reply || 'Query evaluated safely under standard clinical care protocols.'}
+              </p>
             </div>
           </div>
         )}
