@@ -10,8 +10,10 @@ import {
   CheckCircle,
   Phone,
   Edit2,
+  Trash2,
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
 import { doctorsAPI, departmentsAPI } from '../services/api';
@@ -29,6 +31,8 @@ export default function Doctors() {
   const [editingDoctorId, setEditingDoctorId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+  const [deleteDialogDoc, setDeleteDialogDoc] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [doctorForm, setDoctorForm] = useState({
     name: '',
     departmentId: '',
@@ -153,6 +157,20 @@ export default function Doctors() {
       setModalError(err?.message || 'Failed to save physician record.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteDoctor = async () => {
+    if (!deleteDialogDoc) return;
+    try {
+      setDeleteLoading(true);
+      await doctorsAPI.delete(deleteDialogDoc.id);
+      setDeleteDialogDoc(null);
+      fetchData();
+    } catch (err) {
+      alert(err?.message || 'Failed to remove physician.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -308,9 +326,15 @@ export default function Doctors() {
                   >
                     Edit
                   </Button>
-                  <span className="text-[#18794E] font-semibold flex items-center gap-1">
-                    <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" /> Verified Staff
-                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[#B42318] hover:bg-[#FDECEC]"
+                    icon={Trash2}
+                    onClick={() => setDeleteDialogDoc(doc)}
+                  >
+                    Remove
+                  </Button>
                 </div>
               </div>
             </article>
@@ -467,6 +491,19 @@ export default function Doctors() {
           </div>
         </form>
       </Modal>
+
+      {/* Remove Doctor Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(deleteDialogDoc)}
+        title="Remove Physician from Clinical Roster"
+        message={`Are you sure you want to remove ${deleteDialogDoc?.name}? This physician will no longer appear in appointment booking and scheduling rosters.`}
+        confirmText="Remove Physician"
+        cancelText="Keep Physician"
+        danger={true}
+        loading={deleteLoading}
+        onConfirm={handleDeleteDoctor}
+        onClose={() => setDeleteDialogDoc(null)}
+      />
     </div>
   );
 }

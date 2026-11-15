@@ -26,21 +26,38 @@ async function validateSlot(doctorId, slotTimeStr) {
 
   // Check doctor available days (e.g. Monday, Tuesday)
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dayOfWeek = dayNames[slotDate.getDay()];
-  if (Array.isArray(doctor.available_days) && doctor.available_days.length > 0) {
-    if (!doctor.available_days.includes(dayOfWeek)) {
-      throw new Error(`Doctor ${doctor.name} is not available on ${dayOfWeek}s. Available days: ${doctor.available_days.join(', ')}.`);
+  const candidateDays = new Set();
+  candidateDays.add(dayNames[slotDate.getDay()]);
+  candidateDays.add(dayNames[slotDate.getUTCDay()]);
+  if (typeof slotTimeStr === 'string' && slotTimeStr.includes('-')) {
+    const datePart = slotTimeStr.split('T')[0];
+    const [y, m, d] = datePart.split('-').map(Number);
+    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+      candidateDays.add(dayNames[new Date(y, m - 1, d, 12, 0, 0).getDay()]);
     }
   }
 
-  // Check working hours
-  const hours = slotDate.getHours().toString().padStart(2, '0');
-  const minutes = slotDate.getMinutes().toString().padStart(2, '0');
-  const slotTimeOnly = `${hours}:${minutes}`;
+  if (Array.isArray(doctor.available_days) && doctor.available_days.length > 0) {
+    const hasMatchingDay = Array.from(candidateDays).some((day) => doctor.available_days.includes(day));
+    if (!hasMatchingDay) {
+      const primaryDay = dayNames[slotDate.getDay()];
+      throw new Error(`Doctor ${doctor.name} is not available on ${primaryDay}s. Available days: ${doctor.available_days.join(', ')}.`);
+    }
+  }
 
+  // Check working hours: resilient across local machine timezone, UTC, and raw ISO representation
   if (doctor.start_time && doctor.end_time) {
-    if (slotTimeOnly < doctor.start_time || slotTimeOnly > doctor.end_time) {
-      throw new Error(`Appointment time ${slotTimeOnly} is outside doctor's consulting hours (${doctor.start_time} - ${doctor.end_time}).`);
+    const candidateTimes = [];
+    if (typeof slotTimeStr === 'string' && slotTimeStr.includes('T')) {
+      candidateTimes.push(slotTimeStr.split('T')[1].slice(0, 5));
+    }
+    candidateTimes.push(`${slotDate.getHours().toString().padStart(2, '0')}:${slotDate.getMinutes().toString().padStart(2, '0')}`);
+    candidateTimes.push(`${slotDate.getUTCHours().toString().padStart(2, '0')}:${slotDate.getUTCMinutes().toString().padStart(2, '0')}`);
+
+    const isWithinHours = candidateTimes.some((t) => t >= doctor.start_time && t <= doctor.end_time);
+    if (!isWithinHours) {
+      const displayTime = candidateTimes[0] || `${slotDate.getHours()}:${slotDate.getMinutes()}`;
+      throw new Error(`Appointment time ${displayTime} is outside doctor's consulting hours (${doctor.start_time} - ${doctor.end_time}).`);
     }
   }
 

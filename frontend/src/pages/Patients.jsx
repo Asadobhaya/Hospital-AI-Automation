@@ -14,8 +14,10 @@ import {
   RefreshCw,
   X,
   CheckCircle,
+  Trash2,
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import Pagination from '../components/Pagination';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
@@ -39,6 +41,8 @@ export default function Patients() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+  const [deleteDialogPatient, setDeleteDialogPatient] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [patientForm, setPatientForm] = useState({
     name: '',
@@ -167,6 +171,20 @@ export default function Patients() {
     }
   };
 
+  const handleDeletePatient = async () => {
+    if (!deleteDialogPatient) return;
+    try {
+      setDeleteLoading(true);
+      await patientsAPI.delete(deleteDialogPatient.id);
+      setDeleteDialogPatient(null);
+      fetchPatients();
+    } catch (err) {
+      alert(err.message || 'Failed to remove patient record.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -289,7 +307,16 @@ export default function Patients() {
                           size="sm"
                           onClick={() => handleOpenPatientHistory(p)}
                         >
-                          View History
+                          History
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#B42318] hover:bg-[#FDECEC]"
+                          icon={Trash2}
+                          onClick={() => setDeleteDialogPatient(p)}
+                        >
+                          Remove
                         </Button>
                       </div>
                     </td>
@@ -507,6 +534,19 @@ export default function Patients() {
           </div>
         )}
       </Modal>
+
+      {/* Remove Patient Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(deleteDialogPatient)}
+        title="Remove Patient Record"
+        message={`Are you sure you want to remove ${deleteDialogPatient?.name} (${deleteDialogPatient?.phone})? This will remove the patient demographic entry from the active directory.`}
+        confirmText="Remove Patient"
+        cancelText="Keep Patient"
+        danger={true}
+        loading={deleteLoading}
+        onConfirm={handleDeletePatient}
+        onClose={() => setDeleteDialogPatient(null)}
+      />
     </div>
   );
 }

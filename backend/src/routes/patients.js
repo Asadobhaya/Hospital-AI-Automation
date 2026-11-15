@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/dbAdapter');
-const { requireAuth, enforceOwnership } = require('../middleware/auth');
+const { requireAuth, requireRole, enforceOwnership } = require('../middleware/auth');
 const { scrapingProtectionLimiter } = require('../middleware/rateLimiter');
 const { validateBody, schemas } = require('../middleware/validation');
 const response = require('../utils/response');
@@ -148,6 +148,26 @@ router.put('/:id', requireAuth, validateBody(schemas.updatePatient), async (req,
     }
 
     return response.success(res, Array.isArray(updated) ? updated[0] : updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * DELETE /api/patients/:id — Remove patient record (Admin only)
+ */
+router.delete('/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { data: existing } = await db.from('patients').select('*').eq('id', id).single();
+    if (!existing) {
+      return response.error(res, 'Patient record not found.', 404);
+    }
+
+    const { error } = await db.from('patients').delete().eq('id', id);
+    if (error) return response.error(res, error.message, 400);
+
+    return response.success(res, { message: 'Patient record deleted successfully.' });
   } catch (err) {
     next(err);
   }

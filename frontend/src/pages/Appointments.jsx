@@ -180,6 +180,15 @@ export default function Appointments() {
     }
   };
 
+  const selectedDocForBooking = doctors.find((d) => String(d.id) === String(bookingForm.doctorId));
+  const selectedBookingDayOfWeek = bookingForm.slotDate ? new Date(`${bookingForm.slotDate}T12:00:00`).toLocaleDateString('en-US', { weekday: 'long' }) : '';
+  const isSelectedDateOffDay = Boolean(
+    selectedDocForBooking &&
+    Array.isArray(selectedDocForBooking.available_days) &&
+    selectedDocForBooking.available_days.length > 0 &&
+    !selectedDocForBooking.available_days.includes(selectedBookingDayOfWeek)
+  );
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -464,6 +473,18 @@ export default function Appointments() {
                 </option>
               ))}
             </select>
+            {selectedDocForBooking && (
+              <div className="mt-1.5 p-2.5 bg-[#E7F1FB] border border-[#2F78C8]/20 rounded-xl text-xs text-[#173A5E] flex flex-col gap-0.5">
+                <div className="flex items-center justify-between font-semibold">
+                  <span>Available Days:</span>
+                  <span className="text-[#2F78C8]">{Array.isArray(selectedDocForBooking.available_days) ? selectedDocForBooking.available_days.join(', ') : 'All Days'}</span>
+                </div>
+                <div className="flex items-center justify-between text-[#617181]">
+                  <span>Consultation Hours:</span>
+                  <span className="font-medium text-[#172B3A]">{selectedDocForBooking.start_time?.slice(0, 5) || '09:00'} - {selectedDocForBooking.end_time?.slice(0, 5) || '17:00'} ({selectedDocForBooking.slot_duration_minutes || 30}m slots)</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -480,6 +501,12 @@ export default function Appointments() {
                 onChange={(e) => setBookingForm({ ...bookingForm, slotDate: e.target.value })}
                 className="form-input"
               />
+              {isSelectedDateOffDay && (
+                <div className="mt-1 p-2 bg-[#FFF2D8] border border-[#8A4B08]/20 rounded-xl text-xs text-[#8A4B08] flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                  <span>{selectedDocForBooking.name} is not on duty on {selectedBookingDayOfWeek}s.</span>
+                </div>
+              )}
             </div>
             <div>
               <label htmlFor="book-time" className="block text-xs font-semibold text-[#172B3A] mb-1">

@@ -162,6 +162,74 @@ router.post(['/staff-reply', '/send'], requireAuth, async (req, res, next) => {
 });
 
 /**
+ * POST /api/messages/simulate-inbound — Interactive simulation of incoming patient message with AI response
+ */
+router.post('/simulate-inbound', requireAuth, async (req, res, next) => {
+  try {
+    const { patientPhone, content } = req.body;
+    if (!patientPhone || !content) {
+      return response.error(res, 'patientPhone and content are required.', 400);
+    }
+
+    // 1. Record inbound patient message
+    const { data: inboundMsg, error: inErr } = await db.from('message_log').insert({
+      patient_phone: patientPhone,
+      direction: 'inbound',
+      message_type: 'text',
+      content: content.trim(),
+      wa_message_id: 'sim_in_' + Date.now(),
+      status: 'received',
+      created_at: new Date().toISOString(),
+    });
+    if (inErr) return response.error(res, inErr.message, 400);
+
+    // 2. Screen with AI Safety guardrails
+    const screening = await screenIncomingMessage(content, patientPhone);
+
+    let aiReplyText = '';
+    if (screening.isEmergency || screening.blocked || screening.isClinicalDiagnosis) {
+      aiReplyText = screening.response || screening.reply;
+    } else {
+      const lower = content.toLowerCase();
+      if (lower.includes('appointment') || lower.includes('booking') || lower.includes('timing') || lower.includes('slot')) {
+        aiReplyText = 'Assalam-o-Alaikum! MediPulse AI appointment desk par khushamdeed. Hamare paas Cardiology, General Medicine, Orthopedics aur Pediatrics ke certified doctors available hain. Aap appointments tab se online slot choose kar sakte hain.';
+      } else if (lower.includes('report') || lower.includes('test') || lower.includes('result') || lower.includes('cbc')) {
+        aiReplyText = 'Aapki diagnostic lab reports hamare secure token vault par securely generated hain. Hospital staff aapko verified SMS / WhatsApp link provide karega.';
+      } else if (lower.includes('doctor') || lower.includes('fee') || lower.includes('fees') || lower.includes('charges')) {
+        aiReplyText = 'Dr. Muhammad Tariq (General Medicine, Fee: PKR 1,500), Dr. Ayesha Khan (Cardiology, Fee: PKR 3,000), aur Dr. Usman Farooq (Orthopedics, Fee: PKR 2,500) Monday se Friday clinical duty par hain.';
+      } else {
+        aiReplyText = 'Walaikum Assalam! MediPulse AI clinical concierge aapki khidmat mein hazir hai. Hum appointment booking, doctor schedules ya lab report access mein kis tarah madad kar sakte hain?';
+      }
+    }
+
+    // 3. Save AI outbound response
+    const { data: aiMsg } = await db.from('message_log').insert({
+      patient_phone: patientPhone,
+      direction: 'outbound',
+      message_type: 'text',
+      content: aiReplyText,
+      wa_message_id: 'sim_ai_' + Date.now(),
+      status: 'delivered',
+      metadata: { ai_generated: true, screening_action: screening.action || 'ALLOW' },
+      created_at: new Date(Date.now() + 500).toISOString(),
+    });
+
+    // 4. Update patient last contact
+    await db.from('patients').update({
+      last_message_at: new Date().toISOString()
+    }).eq('phone', patientPhone);
+
+    return response.success(res, {
+      inbound: inboundMsg,
+      reply: aiMsg,
+      screening
+    }, 201);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * POST /api/messages/ai-screen and /api/messages/test-ai — Test AI prompt & clinical guardrail screening (Rate limited)
  */
 router.post(['/ai-screen', '/test-ai'], requireAuth, aiLimiter, async (req, res, next) => {

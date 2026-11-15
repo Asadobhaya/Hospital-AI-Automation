@@ -107,6 +107,7 @@ export const patientsAPI = {
   getById: (id) => request(`/patients/${id}`),
   create: (data) => request('/patients', { method: 'POST', body: data }),
   update: (id, data) => request(`/patients/${id}`, { method: 'PUT', body: data }),
+  delete: (id) => request(`/patients/${id}`, { method: 'DELETE' }),
   getAppointments: (id) => request(`/patients/${id}/appointments`),
   getReports: (id) => request(`/patients/${id}/reports`),
   getFeedback: (id) => request(`/patients/${id}/feedback`),
@@ -142,7 +143,9 @@ export const messagesAPI = {
     const qs = query.toString();
     return request(`/messages/conversations${qs ? `?${qs}` : ''}`);
   },
-  getMessages: (patientId) => request(`/messages/${patientId}`),
+  getMessages: (phoneOrId) => request(`/messages/${encodeURIComponent(phoneOrId)}`),
+  sendStaffReply: (data) => request('/messages/staff-reply', { method: 'POST', body: data }),
+  simulateInbound: (data) => request('/messages/simulate-inbound', { method: 'POST', body: data }),
   getErrorLog: () => request('/messages/errors'),
 };
 
