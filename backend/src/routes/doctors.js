@@ -46,7 +46,7 @@ router.get('/:id', requireAuth, async (req, res, next) => {
  */
 router.post('/', requireAuth, requireRole('admin'), validateBody(schemas.createDoctor), async (req, res, next) => {
   try {
-    let { name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes } = req.body;
+    let { name, department, department_id, fee, phone, email, qualification, available_days, start_time, end_time, slot_duration_minutes } = req.body;
     if (!name) {
       return response.error(res, 'Name is required.', 400);
     }
@@ -61,11 +61,22 @@ router.post('/', requireAuth, requireRole('admin'), validateBody(schemas.createD
     }
     if (!department) department = 'General Medicine';
 
+    // Format phone to E.164 if Pakistani
+    let formattedPhone = phone ? String(phone).replace(/[\s\-\(\)]/g, '').trim() : null;
+    if (formattedPhone && formattedPhone.startsWith('03') && formattedPhone.length === 11) {
+      formattedPhone = '+92' + formattedPhone.slice(1);
+    } else if (formattedPhone && formattedPhone.startsWith('923') && formattedPhone.length === 12) {
+      formattedPhone = '+' + formattedPhone;
+    }
+
     const { data: created, error } = await db.from('doctors').insert({
       name,
       department,
       department_id: department_id || null,
       fee: fee || 500,
+      phone: formattedPhone || null,
+      email: email ? email.trim() : null,
+      qualification: qualification ? qualification.trim() : null,
       available_days: available_days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       start_time: start_time || '09:00',
       end_time: end_time || '17:00',
@@ -92,12 +103,23 @@ router.put('/:id', requireAuth, requireRole('admin'), async (req, res, next) => 
       return response.error(res, 'Doctor not found.', 404);
     }
 
-    const { name, department, department_id, fee, available_days, start_time, end_time, slot_duration_minutes, is_active } = req.body;
+    const { name, department, department_id, fee, phone, email, qualification, available_days, start_time, end_time, slot_duration_minutes, is_active } = req.body;
     const updates = {};
     if (name) updates.name = name.trim();
     if (department) updates.department = department.trim();
     if (department_id) updates.department_id = parseInt(department_id, 10);
     if (fee !== undefined) updates.fee = Number(fee);
+    if (phone !== undefined) {
+      let formattedPhone = phone ? String(phone).replace(/[\s\-\(\)]/g, '').trim() : null;
+      if (formattedPhone && formattedPhone.startsWith('03') && formattedPhone.length === 11) {
+        formattedPhone = '+92' + formattedPhone.slice(1);
+      } else if (formattedPhone && formattedPhone.startsWith('923') && formattedPhone.length === 12) {
+        formattedPhone = '+' + formattedPhone;
+      }
+      updates.phone = formattedPhone;
+    }
+    if (email !== undefined) updates.email = email ? email.trim() : null;
+    if (qualification !== undefined) updates.qualification = qualification ? qualification.trim() : null;
     if (available_days) updates.available_days = available_days;
     if (start_time) updates.start_time = start_time;
     if (end_time) updates.end_time = end_time;

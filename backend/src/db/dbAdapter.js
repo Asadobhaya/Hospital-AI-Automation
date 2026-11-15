@@ -80,6 +80,7 @@ function getDefaultData() {
       { id: 6, name: 'Dr. Zainab Malik', department: 'ENT', department_id: 6, fee: 2200, available_days: ['Monday', 'Wednesday', 'Friday'], start_time: '10:00', end_time: '15:00', slot_duration_minutes: 30, is_active: true },
       { id: 7, name: 'Dr. Hamza Ali', department: 'Neurology', department_id: 7, fee: 3500, available_days: ['Tuesday', 'Thursday'], start_time: '10:00', end_time: '16:00', slot_duration_minutes: 45, is_active: true },
       { id: 8, name: 'Dr. Babar Azam', department: 'Cardiology', department_id: 2, fee: 3000, available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], start_time: '09:00', end_time: '17:00', slot_duration_minutes: 30, is_active: true },
+      { id: 9, name: 'Dr. Saad', department: 'General Medicine', department_id: 1, fee: 1500, phone: '+923001234575', email: 'saad@hospital.test', qualification: 'MBBS, FCPS (General Medicine)', available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], start_time: '09:00', end_time: '17:00', slot_duration_minutes: 30, is_active: true },
     ],
     patients: [
       { id: 1, phone: '+923001234567', name: 'Muhammad Ali Khan', email: 'ali.khan@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 5 * 86400000).toISOString() },
@@ -88,6 +89,7 @@ function getDefaultData() {
       { id: 4, phone: '+923031234570', name: 'Zainab Noor', email: 'zainab.noor@example.com', gender: 'female', is_active: true, created_at: new Date(Date.now() - 12 * 3600 * 1000).toISOString() },
       { id: 5, phone: '+923041234571', name: 'Tariq Mehmood', email: 'tariq.mehmood@example.com', gender: 'male', is_active: true, created_at: new Date(Date.now() - 6 * 3600 * 1000).toISOString() },
       { id: 6, phone: '+923004634494', name: 'Asad Ullah', email: 'asad.ullah@example.com', gender: 'male', is_active: true, created_at: new Date().toISOString() },
+      { id: 7, phone: '+923009999999', name: 'Sadia', email: 'sadia@example.com', gender: 'female', is_active: true, created_at: new Date().toISOString() },
     ],
     appointments: [
       {

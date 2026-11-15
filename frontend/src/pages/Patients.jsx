@@ -126,7 +126,7 @@ export default function Patients() {
     setSubmitting(true);
 
     try {
-      let rawPhone = patientForm.phone.trim();
+      let rawPhone = (patientForm.phone || '').replace(/[\s\-\(\)]/g, '').trim();
       if (!patientForm.name.trim()) {
         throw new Error('Patient full name is required.');
       }

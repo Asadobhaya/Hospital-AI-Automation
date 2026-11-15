@@ -129,7 +129,13 @@ export default function Doctors() {
         payload.department_id = parseInt(doctorForm.departmentId, 10);
       }
       if (doctorForm.phone && doctorForm.phone.trim()) {
-        payload.phone = doctorForm.phone.trim();
+        let cleanPhone = doctorForm.phone.replace(/[\s\-\(\)]/g, '').trim();
+        if (cleanPhone.startsWith('03') && cleanPhone.length === 11) {
+          cleanPhone = '+92' + cleanPhone.slice(1);
+        } else if (cleanPhone.startsWith('923') && cleanPhone.length === 12) {
+          cleanPhone = '+' + cleanPhone;
+        }
+        payload.phone = cleanPhone;
       }
       if (doctorForm.email && doctorForm.email.trim()) {
         payload.email = doctorForm.email.trim();

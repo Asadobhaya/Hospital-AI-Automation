@@ -80,7 +80,7 @@ router.post('/', requireAuth, validateBody(schemas.createPatient), async (req, r
   try {
     let { name, phone, email, gender, is_active } = req.body;
     name = (name || '').trim();
-    phone = (phone || '').trim();
+    phone = (phone || '').replace(/[\s\-\(\)]/g, '').trim();
     if (!name || !phone) {
       return response.error(res, 'Patient name and phone number are required.', 400);
     }
